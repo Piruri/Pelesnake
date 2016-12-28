@@ -105,6 +105,9 @@ begin
 				when avanza=>
 				when sumar=>
 				when OK=>
+				{
+					p_estado <= reposo;
+				}
 				when KO=>
 			end case;
 		end process;
