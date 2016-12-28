@@ -38,6 +38,20 @@ begin
 			case estado is
 				when inicio =>
 				when reposo=>
+				if() then
+				elsif () then
+				{
+				}
+				elsif () then
+				{
+				}
+				elsif () then
+				{
+				}
+				else 
+				{
+				}
+				end if;
 				when movimiento=>
 				when analisis=>
 				when avanza=>
