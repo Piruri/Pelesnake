@@ -203,5 +203,4 @@ begin
                	p_estado <= reposo;
        	end case;
    	end process;
-   	 
 end Behavioral;
