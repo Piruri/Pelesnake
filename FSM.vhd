@@ -11,7 +11,8 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity FSM is
-    Port ( mov : in  STD_LOGIC_VECTOR (1 downto 0); --movimiento procedente del teclado
+    Port ( tframe : in std_logic; -- señal de sincronismo vertical vga (se pone a 0 durante un clk)
+	   mov : in  STD_LOGIC_VECTOR (1 downto 0); --movimiento procedente del teclado
 --           FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
            bdir : out  STD_LOGIC_VECTOR (7 downto 0);
            bdata : in  STD_LOGIC_VECTOR (4 downto 0));
