@@ -22,7 +22,7 @@ architecture Behavioral of FSM is
     signal estado,p_estado: mi_estado;
     signal cuenta, pcuenta: unsigned; --contador
     signal flag: std_logic; --para evitar que cuente de más
-    signal Dserp,p_Dserp,Dcola,p_Dcola : std_logic_vector(7 downto 0); --registros de direcciones
+    signal Dserp,p_Dserp,Dcola,p_Dcola : unsigned(7 downto 0); --registros de direcciones
     signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
     signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3o y 2o mov cola, 1o y 0 mov cabeza
 begin
@@ -55,7 +55,7 @@ begin
    	 begin
    		 case estado is
    			 when inicio =>
-   			 when reposo=>
+			 when reposo=>
    			 if(mov = "00") then --Arriba - Up
    				 p_estado <= Up;
    			 elsif (mov = "11") then --Abajo - Down
@@ -96,11 +96,16 @@ begin
    					 p_estado <= estado;
    				 end if;
    			 when analisis=>
-   				 if ((RS (1 downto 0) = "00") or (RS (1 downto 0) = "11" )) then
-   					 p_Dserp <= Dserp + ;
-   				 elsif ((RS (1 downto 0) = "00") or (RS (1 downto 0) = "11" )) then
-   					 p_Dserp <= Dserp + ;
-   				 end if;
+				 case RS(1 downto 0) is
+					 when "00" =>
+						 p_Dserp <= Dserp - 16;
+					 when "01" =>
+						 p_Dserp <= Dserp + 1;		
+					 when "10" =>
+						 p_Dserp <= Dserp - 1;
+					 when "11" =>
+						 p_Dserp <= Dserp + 16;
+   				 end case;
    			 when avanza=>
    			 when sumar=>
    			 when OK=>
