@@ -18,7 +18,7 @@ entity FSM is
 end FSM;
 
 architecture Behavioral of FSM is
-	type mi_estado is (Inicio, Reposo, Movimiento,  Analisis, KO, Avanza, Sumar, OK); --estados
+	type mi_estado is (Inicio, Reposo, Up, Down, Izq, Der,  Analisis, KO, Avanza, Sumar, OK); --estados
 	signal estado,p_estado: mi_estado;
 	signal Dserp,p_Dserp,Dcola,p_Dcola : std_logic_vector(7 downto 0); --refistros de direcciones
 	signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
@@ -38,7 +38,31 @@ begin
 			case estado is
 				when inicio =>
 				when reposo=>
-				when movimiento=>
+				if(mov = "00") then --Arriba - Up
+				{
+					p_estado <= Up;
+				}
+				elsif (mov = "11") then --Abajo - Down
+				{
+					p_estado <= Down;
+				}
+				elsif (mov = "01") then --Izquierda - Izq
+				{
+					p_estado <= Izq;
+				}
+				elsif (mov = "10") then --Derecha - Der
+				{
+					p_estado <= Der;
+				}
+				else 
+				{
+					p_estado <= estado;
+				}
+				end if;
+				when Up=>
+				when Down =>
+				when Izq =>
+				When Der =>
 				when analisis=>
 				when avanza=>
 				when sumar=>
