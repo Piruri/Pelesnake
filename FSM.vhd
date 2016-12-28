@@ -19,7 +19,7 @@ end FSM;
 architecture Behavioral of FSM is
    type mi_estado is (Inicio, Reposo, Movimiento,  Analisis, KO, Avanza, Sumar, OK); --estados
    signal estado,p_estado: mi_estado;
-   signal cuenta, p_cuenta: unsigned; --contador
+   signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
    signal flag: std_logic; --para evitar que cuente de más
    signal Dserp,p_Dserp,Dcola,p_Dcola : unsigned(7 downto 0); --registros de direcciones
    signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
@@ -75,7 +75,7 @@ begin
                      	end if;
                     	if (cuenta = CNT) then --si la cuenta llega al final se avanza
                           	p_estado <= analisis;
-                         	p_cuenta<=(others=>0);
+                         	p_cuenta<=(others=>'0');
                       	else
                           	p_estado <= estado;
                          	p_cuenta<=cuenta;
@@ -88,7 +88,7 @@ begin
                      	end if;
                     	if (cuenta = CNT) then
                           	p_estado <= analisis;
-                         	p_cuenta<=(others=>0);
+                         	p_cuenta<=(others=>'0');
                       	else
                           	p_estado <= estado;
                          	p_cuenta<=cuenta;
@@ -101,37 +101,37 @@ begin
                      	end if;
                     	if (cuenta = CNT) then
                           	p_estado <= analisis;
-                         	p_cuenta<=(others=>0);
+                         	p_cuenta<=(others=>'0');
                       	else
                           	p_estado <= estado;
                          	p_cuenta<=cuenta;
                      	end if;
                  	when "11" => --abajo
                     	if (mov/="00") then
-                        	RS(1 downto 0)<=mov;
+                       	RS(1 downto 0)<=mov;
                      	else
-                        	RS(1 downto 0)<="11";
-                     	end if;
+   								 RS(1 downto 0)<="11";
+                    	end if;
                     	if (cuenta = CNT) then
-                          	p_estado <= analisis;
-                         	p_cuenta<=(others=>0);
+   									 p_estado <= analisis;
+   									 p_cuenta<=(others=>'0');
                       	else
                           	p_estado <= estado;
-                         	p_cuenta<=cuenta;
+   									 p_cuenta<=cuenta;
                      	end if;
                      	when others => --en otro caso(para evitar latch) se hace como si fuese hacia arriba
-                         	if (mov/="11") then
-                        	RS(1 downto 0)<=mov;
+   									 if (mov/="11") then
+   									 RS(1 downto 0)<=mov;
                      	else
                         	RS(1 downto 0)<="00";
-                     	end if;
+                    	end if;
                     	if (cuenta = CNT) then
                           	p_estado <= analisis;
-                         	p_cuenta<=(others=>0);
-                      	else
+   									 p_cuenta<=(others=>'0');
+                    	else
                           	p_estado <= estado;
-                         	p_cuenta<=cuenta;
-                     	end if;
+   									 p_cuenta<=cuenta;
+                    	end if;
                	end case;
    				 when analisis=>
             	case RS(1 downto 0) is --se genera la proxima direccion de la cabeza
@@ -160,15 +160,15 @@ begin
                 	p_estado<=ok; --si no, esta vacio
    					  end if;
            	when sumar=>
-            	rw<='1'; --se va a escribir en la memoria
-            	bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
-            	bdata(3 downto 0)<="01";
-               	bdata(0 downto 1)<=mov;
+   					 rw<='1'; --se va a escribir en la memoria
+   					 bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
+   					 bdata(3 downto 0)<="01";
+   					 bdata(0 downto 1)<=mov;
    					   
-            	bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-            	bdata(3 downto 0)<="10";
-               	bdata(0 downto 1)<=mov;
-            	p_estado<=reposo;           	 
+   					 bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
+   					 bdata(3 downto 0)<="10";
+              	bdata(0 downto 1)<=mov;
+   					 p_estado<=reposo;           	 
            	when OK=>
    					 rw<='1'; --se va a escribir en la memoria
    					 bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
