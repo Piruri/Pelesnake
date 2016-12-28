@@ -11,8 +11,7 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity FSM is
-    Port ( tframe : in std_logic; -- señal de sincronismo vertical vga (se pone a 0 durante un clk)
-	   mov : in  STD_LOGIC_VECTOR (1 downto 0); --movimiento procedente del teclado
+    Port ( mov : in  STD_LOGIC_VECTOR (1 downto 0); --movimiento procedente del teclado
 --           FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
            bdir : out  STD_LOGIC_VECTOR (7 downto 0);
            bdata : in  STD_LOGIC_VECTOR (4 downto 0));
@@ -21,9 +20,9 @@ end FSM;
 architecture Behavioral of FSM is
 	type mi_estado is (Inicio, Reposo, Up, Down, Izq, Der,  Analisis, KO, Avanza, Sumar, OK); --estados
 	signal estado,p_estado: mi_estado;
-	signal Dserp,p_Dserp,Dcola,p_Dcola : std_logic_vector(7 downto 0); --refistros de direcciones
+	signal Dserp,p_Dserp,Dcola,p_Dcola : std_logic_vector(7 downto 0); --registros de direcciones
 	signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
-	signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
+	signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3o y 2o mov cola, 1o y 0 mov cabeza
 begin
 	sync: process (clk, reset)
 		begin 
@@ -61,10 +60,48 @@ begin
 				}
 				end if;
 				when Up=>
+				{
+					RS (1 downto 0) <= "00"; --Se salva en el RS el mov
+					if (tframe = CNT) then
+						p_estado <= analisis;
+					else
+						p_estado <= estado;
+				}
 				when Down =>
+				{
+					RS (1 downto 0) <= "11"; --Se salva en el RS el mov
+					if (tframe = CNT) then
+						p_estado <= analisis;
+					else
+						p_estado <= estado;
+				}
 				when Izq =>
+				{
+					RS (1 downto 0) <= "01"; --Se salva en el RS el mov
+					if (tframe = CNT) then
+						p_estado <= analisis;
+					else
+						p_estado <= estado;
+				}
 				When Der =>
+				{
+					RS (1 downto 0) <= "10"; --Se salva en el RS el mov
+					if (tframe = CNT) then
+						p_estado <= analisis;
+					else
+						p_estado <= estado;
+				}
 				when analisis=>
+				{
+					if ((RS (1 downto 0) = "00") or (RS (1 downto 0) = "11" )) then
+					{
+						p_Dserp <= Dserp +
+					}
+					elsif ((RS (1 downto 0) = "00") or (RS (1 downto 0) = "11" )) then
+					{
+						p_Dserp <= Dserp +
+					}
+				}
 				when avanza=>
 				when sumar=>
 				when OK=>
