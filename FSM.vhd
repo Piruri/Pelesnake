@@ -105,6 +105,8 @@ begin
 						 p_Dserp <= Dserp - 1;
 					 when "11" =>
 						 p_Dserp <= Dserp + 16;
+	    				 when others =>
+	    					 p_Dserp <= Dserp;
    				 end case;
    			 when avanza=>
    			 when sumar=>
