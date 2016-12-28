@@ -163,12 +163,42 @@ begin
             	rw<='1'; --se va a escribir en la memoria
             	bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
             	bdata(3 downto 0)<="01";
-                	bdata(0 downto 1)<=mov;
+               	bdata(0 downto 1)<=mov;
+   					   
             	bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
             	bdata(3 downto 0)<="10";
-                	bdata(0 downto 1)<=mov;
+               	bdata(0 downto 1)<=mov;
             	p_estado<=reposo;           	 
            	when OK=>
+   					 rw<='1'; --se va a escribir en la memoria
+   					 bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
+   					 bdata(3 downto 0)<="01";
+   					 bdata(0 downto 1)<=mov;
+   					 
+   					 bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
+   					 bdata(3 downto 0)<="10";
+   					 bdata(0 downto 1)<=mov;
+   					 
+   					 rw<='0'; -- se va a leer
+   					 bdir<=std_logic_vector(Dcola); --se busca la cola
+   					 p_casilla<=bdata; --se guarda el valor
+   					 
+   					 rw<='1'; --se va a escribir
+   					 bdir<=std_logic_vector(Dcola); --se busca la cola
+   					 bdata<="0000"; --se vacia la direccion de la cola
+   					 case p_casilla(1 downto 0) is --se actualiza la direccion de la cola
+   						 when "00" =>
+   							 Dcola <= Dcola - 16; --se resta una linea vertical
+   						 when "01" =>
+                    	Dcola <= Dcola + 1; --se suma una horizontal    
+   						 when "10" =>
+                    	Dcola <= Dcola - 1; --se resta una horizontal
+   						 when "11" =>
+                    	Dcola <= Dcola + 16; --se suma una vertical
+   						 when others =>
+   							 Dcola <= Dcola;
+   						 end case;
+   					 p_estado<=reposo;
            	when KO=>
                	p_estado <= reposo;
        	end case;
