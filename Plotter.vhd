@@ -13,7 +13,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity Plotter is
     Port ( clk :in STD_LOGIC;
 		reset: in STD_LOGIC;
-		FSM : in  STD_LOGIC;
+		--FSM : in  STD_LOGIC;
 		Y : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada y proveniente del vga
 		X : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada x proceniente del vga
 		objeto : in  STD_LOGIC_VECTOR (3 downto 0); -- tipo de objeto a representar
@@ -62,28 +62,42 @@ yt<= unsigned(Y(8 downto 5)); --que dividen el tablero en grupos de 32 bits
 xr<= unsigned(X(4 downto 0)); --coordenadas yr y xr serán los bits
 yr<= unsigned(Y(4 downto 0)); --que cuentan de 32 en 32
 
-comb: process(objeto)
+comb: process(objeto,yr,xr,Y,X,doutaCI,doutaCU,doutaCD)
 	begin
 		case objeto is
 			when "0000" => --vacio
+				addraCI<=(others=>'0');
+				addraCU<=(others=>'0');
+				addraCD<=(others=>'0');
 				RGB<="00100101";
 			when "0100"=> --cabeza arriba
 				addraCU(9 downto 5)<=std_logic_vector(yr);
-				addraCU(4 downto 0)<=std_logic_vector(xr);		
+				addraCU(4 downto 0)<=std_logic_vector(xr);
+				addraCI<=(others=>'0');
+				addraCD<=(others=>'0');
 				RGB<=doutaCU;
 			when "0101"=> --cabeza derecha (inversión)
 				addraCI(9 downto 5)<=std_logic_vector(yr);
 				addraCI(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
+				addraCU<=(others=>'0');
+				addraCD<=(others=>'0');
 				RGB<=doutaCI;
 			when "0110"=> --cabeza izquierda
 				addraCI(9 downto 5)<=std_logic_vector(yr);
 				addraCI(4 downto 0)<=std_logic_vector(xr);		
+				addraCU<=(others=>'0');
+				addraCD<=(others=>'0');
 				RGB<=doutaCD;
 			when "0111"=> --cabeza abajo
 				addraCD(9 downto 5)<=std_logic_vector(yr);
 				addraCD(4 downto 0)<=std_logic_vector(xr);		
+				addraCI<=(others=>'0');
+				addraCU<=(others=>'0');
 				RGB<=doutaCD;
 			when others =>
+				addraCI<=(others=>'0');
+				addraCU<=(others=>'0');
+				addraCD<=(others=>'0');
 				RGB<="00011100";
 		end case;
 				
