@@ -11,15 +11,33 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Plotter is
-    Port ( FSM : in  STD_LOGIC;
-           Y : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada y proveniente del vga
-           X : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada x proceniente del vga
-			  objeto : in  STD_LOGIC_VECTOR (3 downto 0); -- tipo de objeto a representar
-           yxt : out  STD_LOGIC_VECTOR (7 downto 0); --coordenada yx que va al tablero
-           RGB : out  STD_LOGIC_VECTOR (7 downto 0)); --color a representar
+    Port ( clk :in STD_LOGIC;
+		reset: in STD_LOGIC;
+		FSM : in  STD_LOGIC;
+		Y : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada y proveniente del vga
+		X : in  STD_LOGIC_VECTOR (9 downto 0); --coordenada x proceniente del vga
+		objeto : in  STD_LOGIC_VECTOR (3 downto 0); -- tipo de objeto a representar
+		yxt : out  STD_LOGIC_VECTOR (7 downto 0); --coordenada yx que va al tablero
+		RGB : out  STD_LOGIC_VECTOR (7 downto 0)); --color a representar
 end Plotter;
 
 architecture Behavioral of Plotter is
+
+COMPONENT CabezaIzq	PORT
+		(clka : IN STD_LOGIc;
+		addra :IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+		douta :OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
+	END COMPONENT;
+COMPONENT CabezaUp	PORT
+		(clka : IN STD_LOGIc;
+		addra :IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+		douta :OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
+	END COMPONENT;
+COMPONENT CabezaDown	PORT
+		(clka : IN STD_LOGIc;
+		addra :IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+		douta :OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
+	END COMPONENT;
 
 signal yt, xt:unsigned (3 downto 0); --señales de y x para el tablero
 signal yr, xr:unsigned (4 downto 0); --señales de y x para las imagenes
@@ -27,6 +45,13 @@ signal addraCI, addraCU, addraCD: std_logic_vector(9 downto 0);
 signal doutaCI, doutaCU, doutaCD: std_logic_vector(7 downto 0);
 
 begin
+
+RomCI:CabezaIzq
+		Port map(clka=>clk,addra=>addraCI,douta=>doutaCI);
+RomCU:CabezaUp
+		Port map(clka=>clk,addra=>addraCU,douta=>doutaCU);
+RomCD:CabezaDown
+		Port map(clka=>clk,addra=>addraCD,douta=>doutaCD);
 
 yxt(7 downto 4)<=std_logic_vector(yt); --asignación de las coordenadas
 yxt(3 downto 0)<=std_logic_vector(xt); --yx que iran al tablero
