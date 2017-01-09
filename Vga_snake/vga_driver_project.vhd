@@ -21,8 +21,8 @@ entity vga_driver_project is
            RED : out  STD_LOGIC_VECTOR (2 downto 0);
            GRN : out  STD_LOGIC_VECTOR (2 downto 0);
            BLUE : out  STD_LOGIC_VECTOR (1 downto 0);
-           eje_x : out  UNSIGNED (9 downto 0);
-           eje_y : out  UNSIGNED (9 downto 0));
+           eje_x : out  STD_LOGIC_VECTOR (9 downto 0);
+           eje_y : out  STD_LOGIC_VECTOR (9 downto 0));
 end vga_driver_project;
 
 architecture Behavioral of vga_driver_project is
@@ -111,7 +111,7 @@ compv: comparador
 		o1 => Blank_v,
 		o2 => VS,
 		o3 => o3_resets_v);
-eje_x <= unsigned(x);
-eje_y <= unsigned(y);
+eje_x <= x;
+eje_y <= y;
 end Behavioral;
 
