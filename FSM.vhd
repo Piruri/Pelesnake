@@ -29,7 +29,7 @@ architecture Behavioral of FSM is
    signal flag: std_logic; --para evitar que cuente de más
    signal Dserp,p_Dserp,Dcola,p_Dcola : unsigned(7 downto 0); --registros de direcciones
    signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
-   signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
+   signal RS,pRS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
 signal mov,pmov :  STD_LOGIC_VECTOR (1 downto 0); --vector de movimiento
 signal direcciones : std_logic_vector (3 downto 0); --Para codificar el movimiento
 begin
@@ -63,12 +63,14 @@ comb:process (direcciones,mov) --Codificación para el movimiento
        begin
            if (reset='1')then
                estado<=Inicio;
+	       RS <= (others => '0');
                cuenta<=(others=>'0');
 	   	mov<="00";
            elsif (rising_edge(clk) and reset='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
 					mov<=pmov;
+		RS <= pRS;
            end if;
        end process;
 -----------------------------------------------------------
@@ -80,18 +82,18 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 			  
 -----------------------------------------------------------
 					when inicio =>
-                 RS(4)<='1'; --bit de inicio
+                 pRS(4)<='1'; --bit de inicio
 	       if (direcciones/="0000") then p_estado<=reposo;
 	       else p_estado<=inicio;
 	       end if;
 -----------------------------------------------------------
 					when reposo=>
                    if(RS(4)='1') then --se viene de inicio
-                    RS(1 downto 0)<=mov;
-                     RS(4)<='0';
+                    pRS(1 downto 0)<=mov;
+                     pRS(4)<='0';
                      p_estado<=movimiento;
                  else
-                    RS(4)<='0';
+                    pRS(4)<='0';
                     p_estado<=movimiento;
                end if;
 -----------------------------------------------------------
@@ -99,9 +101,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                  case RS(1 downto 0) is --se ve el ultimo movimiento
                     when "00" => --arriba
                          if (mov/="11") then --si no se esta realizando el mov contrario se guarda
-                            RS(1 downto 0)<=mov;
+                            pRS(1 downto 0)<=mov;
                          else
-                            RS(1 downto 0)<="00"; --si no se mantiene
+                            pRS(1 downto 0)<="00"; --si no se mantiene
                          end if;
                         if (cuenta = CNT) then --si la cuenta llega al final se avanza
                               p_estado <= analisis;
@@ -112,9 +114,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                          end if;
                      when "01" => --derecha
                          if (mov/="10") then
-                            RS(1 downto 0)<=mov;
+                            pRS(1 downto 0)<=mov;
                          else
-                            RS(1 downto 0)<="01";
+                            pRS(1 downto 0)<="01";
                          end if;
                         if (cuenta = CNT) then
                               p_estado <= analisis;
@@ -125,9 +127,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                          end if;        
                      when "10" => --izquierda
                          if (mov/="01") then
-                            RS(1 downto 0)<=mov;
+                            pRS(1 downto 0)<=mov;
                          else
-                            RS(1 downto 0)<="10";
+                            pRS(1 downto 0)<="10";
                          end if;
                         if (cuenta = CNT) then
                               p_estado <= analisis;
@@ -138,9 +140,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                          end if;
                      when "11" => --abajo
                         if (mov/="00") then
-                           RS(1 downto 0)<=mov;
+                           pRS(1 downto 0)<=mov;
                          else
-									RS(1 downto 0)<="11";
+									pRS(1 downto 0)<="11";
                         end if;
                         if (cuenta = CNT) then
 										p_estado <= analisis;
@@ -151,9 +153,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                          end if;
                          when others => --en otro caso(para evitar latch) se hace como si fuese hacia arriba
 										if (mov/="11") then
-										RS(1 downto 0)<=mov;
+										pRS(1 downto 0)<=mov;
                          else
-                            RS(1 downto 0)<="00";
+                            pRS(1 downto 0)<="00";
                         end if;
                         if (cuenta = CNT) then
                               p_estado <= analisis;
