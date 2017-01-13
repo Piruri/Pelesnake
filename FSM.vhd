@@ -9,7 +9,10 @@ entity FSM is
 	 reset : in std_logic;
 	 clk : in std_logic;
 	 tframe : in std_logic; --señal vsinc del vga, está a 0 un clk al refrescar terminar una pantalla    
-    mov : in  STD_LOGIC_VECTOR (1 downto 0); --movimiento procedente del teclado
+	UP : in STD_LOGIC;
+	LEF : in STD_LOGIC;
+	RIG : in STD_LOGIC;
+	DOW : in STD_LOGIC;
 --  FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
     bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
     bdata : in  STD_LOGIC_VECTOR (4 downto 0); --bus datos
@@ -24,8 +27,31 @@ architecture Behavioral of FSM is
    signal Dserp,p_Dserp,Dcola,p_Dcola : unsigned(7 downto 0); --registros de direcciones
    signal p_casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
    signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
+signal mov,pmov :  STD_LOGIC_VECTOR (1 downto 0); --vector de movimiento
+signal direcciones : std_logic_vector (3 downto 0); --Para codificar el movimiento
 begin
-
+	
+direcciones(0)<=UP;
+direcciones(1)<=LEF;
+direcciones(2)<=RIG;
+direcciones(3)<=DOW;
+comb:process (direcciones,mov) --Codificación para el movimiento
+	begin
+		case direcciones is
+			when "0001" => --
+				pmov <= "00";
+			when "0010" => --
+				pmov <= "01";
+			when "0100" =>
+				pmov <= "10";
+			when "1000" =>
+				pmov <= "11";
+			when others =>
+				pmov <= mov;
+		end case;
+	end process;
+-----------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------
    contcomb: process (tframe, cuenta) --Contador
        begin
            if (tframe='0' and flag='0') then
@@ -47,9 +73,11 @@ begin
            if (reset='1')then
                estado<=Inicio;
                cuenta<=(others=>'0');
+	   	mov<="00";
            elsif (rising_edge(clk) and reset='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
+		pmov<=mov;
            end if;
        end process;
 -----------------------------------------------------------
