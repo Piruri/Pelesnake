@@ -48,26 +48,47 @@ COMPONENT Plotter is
 		RGB : out  STD_LOGIC_VECTOR (7 downto 0)); --color a representar
 end COMPONENT;
 
-COMPONENT CabezaIzq	PORT(
+COMPONENT tablero	PORT(
 	  clka: in STD_LOGIC;
-	  wea: in STD_LOGIC;
+	  wea: in STD_LOGIC_VECTOR(0 downto 0);
 	  addra: in STD_LOGIC_VECTOR (7 downto 0);
 	  dina: in STD_LOGIC_VECTOR(7 downto 0);
 	  douta : out STD_LOGIC_VECTOR (7 downto 0);
 	  clkb : in STD_LOGIC;
-	  web :in STD_LOGIC;
+	  web :in STD_LOGIC_VECTOR (0 downto 0);
 	  addrb : in STD_LOGIC_VECTOR(7 downto 0);
 	  dinb : in STD_LOGIC_VECTOR(7 downto 0);
 	  doutb : out STD_LOGIC_VECTOR(7 downto 0));
 END COMPONENT;
+
+Component FSM is
+	Generic( CNT: integer :=26); -- numero de veces que cuenta antes de hacer otro movimiento
+    Port (
+		reset : in std_logic;
+		clk : in std_logic;
+		tframe : in std_logic; --señal vsinc del vga, está a 0 un clk al refrescar terminar una pantalla    
+		UP : in STD_LOGIC;
+		LEF : in STD_LOGIC;
+		RIG : in STD_LOGIC;
+		DOW : in STD_LOGIC;
+	-- FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
+		bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
+		bdatin : out  STD_LOGIC_VECTOR (4 downto 0); --bus datos que introduce info en la memoria
+		bdatout : in  STD_LOGIC_VECTOR (4 downto 0); --bus datos que saxa datos de la memoria
+		rw : out STD_LOGIC;--señal de lectura/escritura
+		muerto : out STD_LOGIC; --es una señal para que el top se ponga a resetear la chulamaquina
+		revivio : in STD_LOGIC); -- nos indica que el top ya ha resetado la chulamaquina (chulamaquina igual a tablero)
+end COMPONENT;
 --
-signal BdataPlot : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter, tipo de objeto
-Signal RGBin, RGBout, yxtab : STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero
+signal BdataPlot, BdatFSMin, BdatFSMout : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
+Signal RGBin, RGBout, yxtab ,BdirFSMt, Bdattabin, Bdattabout: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
 signal Vsinc, Hsinc : STD_LOGIC;
+signal uno,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
+signal muerte : STD_LOGIC;--rw de FSM
 
 begin
-
+uno<="1";
 VGA : vga_driver_project
     Port Map( clk=>clk,
            reset=>reset,
@@ -92,5 +113,35 @@ Plot : Plotter
 		yxt => yxtab,
 		RGB => RGBout);
 		
+tablerito : tablero	
+	PORT Map(
+	  clka=>clk,
+	  wea=>rwFSM,
+	  addra=> BdirFSMt,
+	  dina=>Bdattabin,
+	  douta =>Bdattabout,
+	  clkb => clk,
+	  web => uno,
+	  addrb => yxtab,
+	  dinb => "00000000",
+	  doutb => BdataPlot);
+		
+Maquinita : FSM 
+	Generic Map( CNT =>26) -- numero de veces que cuenta antes de hacer otro movimiento
+    Port Map(
+		reset => reset,
+		clk => clk,
+		tframe => Vsinc,
+		UP => Up,
+		LEF => Lef,
+		RIG => Rig,
+		DOW => Dow,
+	-- FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
+		bdir => BdirFSMt,
+		bdatin => BdatFSMin,
+		bdatout => BdatFSMout,
+		rw => rwFSM,
+		muerto => muerte,
+		revivio => muerte);
 		
 end Behavioral;
