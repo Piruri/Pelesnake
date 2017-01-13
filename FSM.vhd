@@ -52,19 +52,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 	end process;
 -----------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------
-   contcomb: process (tframe, cuenta) --Contador
-       begin
-           if (tframe='0' and flag='0') then
-               flag<='1';
-               p_cuenta<=cuenta+1;
-           elsif (tframe='0' and flag='1') then
-               flag<='1';
-               p_cuenta<=cuenta;
-           else
-               flag<='0';
-               p_cuenta<=cuenta;
-           end if;
-       end process;
+
 -----------------------------------------------------------
 -----------------------------------------------------------
 
@@ -83,7 +71,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   comb: process(estado,cuenta,mov,bdir,bdata,dserp,dcola)
+   combi: process(estado,cuenta,mov,bdata,dserp,dcola)
        begin
            case estado is
 			  
@@ -117,7 +105,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                              p_cuenta<=(others=>'0');
                           else
                               p_estado <= estado;
-                             p_cuenta<=cuenta;
+                             p_cuenta<=cuenta+1;
                          end if;
                      when "01" => --derecha
                          if (mov/="10") then
@@ -130,7 +118,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                              p_cuenta<=(others=>'0');
                           else
                               p_estado <= estado;
-                             p_cuenta<=cuenta;
+                             p_cuenta<=cuenta+1;
                          end if;        
                      when "10" => --izquierda
                          if (mov/="01") then
@@ -143,7 +131,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                              p_cuenta<=(others=>'0');
                           else
                               p_estado <= estado;
-                             p_cuenta<=cuenta;
+                             p_cuenta<=cuenta+1;
                          end if;
                      when "11" => --abajo
                         if (mov/="00") then
@@ -156,7 +144,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 										p_cuenta<=(others=>'0');
                           else
                               p_estado <= estado;
-										p_cuenta<=cuenta;
+										p_cuenta<=cuenta+1;
                          end if;
                          when others => --en otro caso(para evitar latch) se hace como si fuese hacia arriba
 										if (mov/="11") then
@@ -169,7 +157,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 										p_cuenta<=(others=>'0');
                         else
                               p_estado <= estado;
-										p_cuenta<=cuenta;
+										p_cuenta<=cuenta+1;
                         end if;
                    end case;
 -----------------------------------------------------------
@@ -199,28 +187,28 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                     p_estado<=sumar;
 						else
                     p_estado<=ok; --si no, esta vacio
-						 end if;
+		 				 end if;
 -----------------------------------------------------------
                when sumar=>
 						rw<='1'; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
-						bdata(3 downto 0)<="01";
-						bdata(0 downto 1)<=mov;
+						bdata(3 downto 2)<="01";
+						bdata(1 downto 0)<=mov;
 						  
 						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdata(3 downto 0)<="10";
-                  bdata(0 downto 1)<=mov;
+						bdata(3 downto 2)<="10";
+                  bdata(1 downto 0)<=mov;
 						p_estado<=reposo;
 -----------------------------------------------------------
 						when OK=>
 						rw<='1'; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
-						bdata(3 downto 0)<="01";
-						bdata(0 downto 1)<=mov;
+						bdata(3 downto 2)<="01";
+						bdata(1 downto 0)<=mov;
 						
 						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdata(3 downto 0)<="10";
-						bdata(0 downto 1)<=mov;
+						bdata(3 downto 2)<="10";
+						bdata(1 downto 0)<=mov;
 						
 						rw<='0'; -- se va a leer
 						bdir<=std_logic_vector(Dcola); --se busca la cola
