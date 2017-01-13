@@ -22,16 +22,6 @@ end TOP;
 
 architecture Behavioral of TOP is
 
-COMPONENT ControlPad is
-    Port ( UP : in STD_LOGIC;
-		LEF : in STD_LOGIC;
-		RIG : in STD_LOGIC;
-		DOW : in STD_LOGIC;
-		clk : in STD_LOGIC;
-		reset : in STD_LOGIC;
-      salbuscontrol : out  STD_LOGIC_VECTOR (1 downto 0));
-end COMPONENT;
-
 COMPONENT vga_driver_project is
     Port ( clk : in  STD_LOGIC;
            reset : in  STD_LOGIC;
@@ -57,23 +47,26 @@ COMPONENT Plotter is
 		yxt : out  STD_LOGIC_VECTOR (7 downto 0); --coordenada yx que va al tablero
 		RGB : out  STD_LOGIC_VECTOR (7 downto 0)); --color a representar
 end COMPONENT;
+
+COMPONENT CabezaIzq	PORT(
+	  clka: in STD_LOGIC;
+	  wea: in STD_LOGIC;
+	  addra: in STD_LOGIC_VECTOR (7 downto 0);
+	  dina: in STD_LOGIC_VECTOR(7 downto 0);
+	  douta : out STD_LOGIC_VECTOR (7 downto 0);
+	  clkb : in STD_LOGIC;
+	  web :in STD_LOGIC;
+	  addrb : in STD_LOGIC_VECTOR(7 downto 0);
+	  dinb : in STD_LOGIC_VECTOR(7 downto 0);
+	  doutb : out STD_LOGIC_VECTOR(7 downto 0));
+END COMPONENT;
 --
-signal ControlBus : std_logic_vector(1 downto 0);
 signal BdataPlot : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter, tipo de objeto
 Signal RGBin, RGBout, yxtab : STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
 signal Vsinc, Hsinc : STD_LOGIC;
 
 begin
-
-control : ControlPad
-	Port Map(clk=>clk,
-		reset=>reset,
-		UP=>Up,
-		LEF=>Lef,
-		RIG=>Rig,
-		DOW=>Dow,
-		salbuscontrol=>ControlBus);
 
 VGA : vga_driver_project
     Port Map( clk=>clk,
