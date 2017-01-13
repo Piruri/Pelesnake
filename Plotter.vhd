@@ -66,6 +66,9 @@ comb: process(objeto,yr,xr,Y,X,doutaCI,doutaCU,doutaCD)
 	begin
 		if(unsigned(X)<63 or unsigned(X)>575)then 
 			RGB<="00101011";
+			addraCI<=(others=>'0');
+			addraCU<=(others=>'0');
+			addraCD<=(others=>'0');
 		else
 			case objeto is
 				when "0000" => --vacio (tablero libre)
