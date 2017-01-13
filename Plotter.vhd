@@ -41,8 +41,8 @@ COMPONENT CabezaDown	PORT
 
 signal yt, xt:unsigned (3 downto 0); --señales de y x para el tablero
 signal yr, xr:unsigned (4 downto 0); --señales de y x para las imagenes
-signal addraCI, addraCU, addraCD: std_logic_vector(9 downto 0);
-signal doutaCI, doutaCU, doutaCD: std_logic_vector(7 downto 0);
+signal addraCI, addraCU, addraCD: std_logic_vector(9 downto 0); --direcciones de lectura a las memorias
+signal doutaCI, doutaCU, doutaCD: std_logic_vector(7 downto 0); --info dentro de memorias
 
 begin
 
@@ -64,43 +64,51 @@ yr<= unsigned(Y(4 downto 0)); --que cuentan de 32 en 32
 
 comb: process(objeto,yr,xr,Y,X,doutaCI,doutaCU,doutaCD)
 	begin
-		case objeto is
-			when "0000" => --vacio
-				addraCI<=(others=>'0');
-				addraCU<=(others=>'0');
-				addraCD<=(others=>'0');
-				RGB<="00100101";
-			when "0100"=> --cabeza arriba
-				addraCU(9 downto 5)<=std_logic_vector(yr);
-				addraCU(4 downto 0)<=std_logic_vector(xr);
-				addraCI<=(others=>'0');
-				addraCD<=(others=>'0');
-				RGB<=doutaCU;
-			when "0101"=> --cabeza derecha (inversión)
-				addraCI(9 downto 5)<=std_logic_vector(yr);
-				addraCI(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
-				addraCU<=(others=>'0');
-				addraCD<=(others=>'0');
-				RGB<=doutaCI;
-			when "0110"=> --cabeza izquierda
-				addraCI(9 downto 5)<=std_logic_vector(yr);
-				addraCI(4 downto 0)<=std_logic_vector(xr);		
-				addraCU<=(others=>'0');
-				addraCD<=(others=>'0');
-				RGB<=doutaCD;
-			when "0111"=> --cabeza abajo
-				addraCD(9 downto 5)<=std_logic_vector(yr);
-				addraCD(4 downto 0)<=std_logic_vector(xr);		
-				addraCI<=(others=>'0');
-				addraCU<=(others=>'0');
-				RGB<=doutaCD;
-			when others =>
-				addraCI<=(others=>'0');
-				addraCU<=(others=>'0');
-				addraCD<=(others=>'0');
-				RGB<="00011100";
-		end case;
-				
+		if(unsigned(X)<63 or unsigned(X)>575)then 
+			RGB<="00101011";
+		else
+			case objeto is
+				when "0000" => --vacio (tablero libre)
+					addraCI<=(others=>'0');
+					addraCU<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<="11111010";
+				when "0100"=> --cabeza arriba
+					addraCU(9 downto 5)<=std_logic_vector(yr);
+					addraCU(4 downto 0)<=std_logic_vector(xr);
+					addraCI<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<=doutaCU;
+				when "0101"=> --cabeza derecha (inversión)
+					addraCI(9 downto 5)<=std_logic_vector(yr);
+					addraCI(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
+					addraCU<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<=doutaCI;
+				when "0110"=> --cabeza izquierda
+					addraCI(9 downto 5)<=std_logic_vector(yr);
+					addraCI(4 downto 0)<=std_logic_vector(xr);		
+					addraCU<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<=doutaCD;
+				when "0111"=> --cabeza abajo
+					addraCD(9 downto 5)<=std_logic_vector(yr);
+					addraCD(4 downto 0)<=std_logic_vector(xr);		
+					addraCI<=(others=>'0');
+					addraCU<=(others=>'0');
+					RGB<=doutaCD;
+				when "1111"=> --muro
+					addraCI<=(others=>'0');
+					addraCU<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<="00011011";
+				when others =>
+					addraCI<=(others=>'0');
+					addraCU<=(others=>'0');
+					addraCD<=(others=>'0');
+					RGB<="00011100";
+			end case;
+		end if;
 end process;
 
 end Behavioral;
