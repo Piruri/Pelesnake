@@ -11,15 +11,24 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity ControlPad is
-    Port ( direcciones : in STD_LOGIC_VECTOR (3 downto 0);
-			  clk : in STD_LOGIC;
-			  reset : in STD_LOGIC;
-           salbuscontrol : out  STD_LOGIC_VECTOR (1 downto 0));
+    Port ( UP : in STD_LOGIC;
+		LEF : in STD_LOGIC;
+		RIG : in STD_LOGIC;
+		DOW : in STD_LOGIC;
+		clk : in STD_LOGIC;
+		reset : in STD_LOGIC;
+      salbuscontrol : out  STD_LOGIC_VECTOR (1 downto 0));
 end ControlPad;
---Se trata únicamente de un decodificador de 4 entradas y un bus de salida de 2.
+--Se trata Ãºnicamente de un decodificador de 4 entradas y un bus de salida de 2.
 architecture Behavioral of ControlPad is
-signal pbuscontrol, buscontrol: unsigned (1 downto 0);
+signal pbuscontrol, buscontrol : STD_LOGIC_VECTOR (1 downto 0);
+signal direcciones : STD_LOGIC_VECTOR (3 downto 0);
 begin
+direcciones(0)<=UP;
+direcciones(1)<=LEF;
+direcciones(2)<=RIG;
+direcciones(3)<=DOW;
+
 sinc: process (reset,clk)
 	begin
 		if (reset='1') then
@@ -45,4 +54,3 @@ comb:process (direcciones,buscontrol)
 	end process;
 salbuscontrol <= std_logic_vector(buscontrol);
 end Behavioral;
-
