@@ -15,8 +15,11 @@ entity FSM is
 	DOW : in STD_LOGIC;
 --  FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
     bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
-    bdata : in  STD_LOGIC_VECTOR (4 downto 0); --bus datos
-    rw : out STD_LOGIC);--señal de lectura/escritura
+    bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
+    bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
+    rw : out STD_LOGIC_vector(0 downto 0);--señal de lectura/escritura
+	 muerto : out STD_LOGIC; --es una señal para que el top se ponga a resetear la chulamaquina
+	 revivio : in STD_LOGIC); -- nos indica que el top ya ha resetado la chulamaquina (chulamaquina igual a tablero)
 end FSM;
 
 architecture Behavioral of FSM is
@@ -65,13 +68,13 @@ comb:process (direcciones,mov) --Codificación para el movimiento
            elsif (rising_edge(clk) and reset='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
-		pmov<=mov;
+					mov<=pmov;
            end if;
        end process;
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   combi: process(estado,cuenta,mov,bdata,dserp,dcola)
+   combi: process(estado,cuenta,mov,bdatout,dserp,dcola,direcciones,rs,p_dserp,p_casilla,revivio)
        begin
            case estado is
 			  
@@ -174,9 +177,10 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                         when others =>
                              p_Dserp <= Dserp;
                   end case;
+						rw<="0";
                 bdir<=std_logic_vector(p_Dserp); --se escribe la casilla
-                p_casilla<=bdata;
-						if(p_casilla(3)='1')then --si el bms es uno es muro o cola
+                p_casilla<=bdatout;
+						if(p_casilla(3)='1')then --si el bMs es uno es muro o cola
                     p_estado<=ko;
 						else
                     p_estado<=avanza; --si no avanza
@@ -190,33 +194,33 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 		 				 end if;
 -----------------------------------------------------------
                when sumar=>
-						rw<='1'; --se va a escribir en la memoria
+						rw<="1"; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
-						bdata(3 downto 2)<="01";
-						bdata(1 downto 0)<=mov;
+						bdatin(3 downto 2)<="01";
+						bdatin(1 downto 0)<=mov;
 						  
 						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdata(3 downto 2)<="10";
-                  bdata(1 downto 0)<=mov;
+						bdatin(3 downto 2)<="10";
+                  bdatin(1 downto 0)<=mov;
 						p_estado<=reposo;
 -----------------------------------------------------------
 						when OK=>
-						rw<='1'; --se va a escribir en la memoria
+						rw<="1"; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
-						bdata(3 downto 2)<="01";
-						bdata(1 downto 0)<=mov;
+						bdatin(3 downto 2)<="01";
+						bdatin(1 downto 0)<=mov;
 						
 						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdata(3 downto 2)<="10";
-						bdata(1 downto 0)<=mov;
+						bdatin(3 downto 2)<="10";
+						bdatin(1 downto 0)<=mov;
 						
-						rw<='0'; -- se va a leer
+						rw<="0"; -- se va a leer
 						bdir<=std_logic_vector(Dcola); --se busca la cola
-						p_casilla<=bdata; --se guarda el valor
+						p_casilla<=bdatout; --se guarda el valor
 						
-						rw<='1'; --se va a escribir
+						rw<="1"; --se va a escribir
 						bdir<=std_logic_vector(Dcola); --se busca la cola
-						bdata<="0000"; --se vacia la direccion de la cola
+						bdatin<="0000"; --se vacia la direccion de la cola
 						case p_casilla(1 downto 0) is --se actualiza la direccion de la cola
 							when "00" =>
 								Dcola <= Dcola - 16; --se resta una linea vertical
@@ -232,7 +236,11 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 						p_estado<=reposo; 
 -----------------------------------------------------------
                when KO=>
-                   p_estado <= reposo;
+						muerto<='1';
+						if (revivio='1') then
+                   p_estado <= inicio;
+						else p_estado<=estado;
+						end if;
            end case;
        end process;
 		 
