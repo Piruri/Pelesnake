@@ -26,7 +26,7 @@ architecture Behavioral of FSM is
    signal RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
 begin
 
-   contcomb: process (tframe, cuenta)
+   contcomb: process (tframe, cuenta) --Contador
        begin
            if (tframe='0' and flag='0') then
                flag<='1';
@@ -40,7 +40,7 @@ begin
            end if;
        end process;
 
-   estadosync: process (clk, reset)
+   estadosync: process (clk, reset) --Actualización de estados
        begin
            if (reset='1')then
                estado<=Inicio;
@@ -51,7 +51,7 @@ begin
            end if;
        end process;
 
-   comb: process(estado)
+   comb: process(estado,cuenta,mov,bdir,bdata,dserp,dcola)
        begin
            case estado is
 					when inicio =>
