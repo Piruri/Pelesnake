@@ -98,6 +98,7 @@ comb:process (direcciones,mov) --Codificación para el movimiento
                end if;
 -----------------------------------------------------------
 					when Movimiento=>
+		       pRS (4 dwonto 2) <= RS (4 downto 2);
                  case RS(1 downto 0) is --se ve el ultimo movimiento
                     when "00" => --arriba
                          if (mov/="11") then --si no se esta realizando el mov contrario se guarda
