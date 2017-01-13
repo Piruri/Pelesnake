@@ -39,8 +39,10 @@ begin
                p_cuenta<=cuenta;
            end if;
        end process;
+-----------------------------------------------------------
+-----------------------------------------------------------
 
-   estadosync: process (clk, reset) --Actualización de estados
+   estadosync: process (clk, reset) --Actualización de datos
        begin
            if (reset='1')then
                estado<=Inicio;
@@ -50,12 +52,17 @@ begin
                cuenta<=p_cuenta;
            end if;
        end process;
+-----------------------------------------------------------
+-----------------------------------------------------------
 
    comb: process(estado,cuenta,mov,bdir,bdata,dserp,dcola)
        begin
            case estado is
+			  
+-----------------------------------------------------------
 					when inicio =>
                  RS(4)<='1'; --bit de inicio
+-----------------------------------------------------------
 					when reposo=>
                    if(RS(4)='1') then --se viene de inicio
                     RS(1 downto 0)<=mov;
@@ -65,6 +72,7 @@ begin
                     RS(4)<='0';
                     p_estado<=movimiento;
                end if;
+-----------------------------------------------------------
 					when Movimiento=>
                  case RS(1 downto 0) is --se ve el ultimo movimiento
                     when "00" => --arriba
@@ -133,6 +141,7 @@ begin
 										p_cuenta<=cuenta;
                         end if;
                    end case;
+-----------------------------------------------------------
 					when analisis=>
                 case RS(1 downto 0) is --se genera la proxima direccion de la cabeza
                     when "00" =>
@@ -153,12 +162,14 @@ begin
 						else
                     p_estado<=avanza; --si no avanza
 						end if;
+-----------------------------------------------------------
 					when avanza=>
 						if(p_casilla(1)='1')then --si el bit 1 es 1 es una seta
                     p_estado<=sumar;
 						else
                     p_estado<=ok; --si no, esta vacio
 						 end if;
+-----------------------------------------------------------
                when sumar=>
 						rw<='1'; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
@@ -168,8 +179,9 @@ begin
 						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
 						bdata(3 downto 0)<="10";
                   bdata(0 downto 1)<=mov;
-						p_estado<=reposo;                
-               when OK=>
+						p_estado<=reposo;
+-----------------------------------------------------------
+						when OK=>
 						rw<='1'; --se va a escribir en la memoria
 						bdir<=std_logic_vector(p_Dserp); --se escribe la nueva cabeza
 						bdata(3 downto 0)<="01";
@@ -199,6 +211,7 @@ begin
 								Dcola <= Dcola;
 							end case;
 						p_estado<=reposo; 
+-----------------------------------------------------------
                when KO=>
                    p_estado <= reposo;
            end case;
