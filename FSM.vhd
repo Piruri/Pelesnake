@@ -90,6 +90,9 @@ comb:process (direcciones,mov) --Codificación para el movimiento
 -----------------------------------------------------------
 					when inicio =>
                  RS(4)<='1'; --bit de inicio
+	       if (direcciones!="0000") then p_estado<=reposo;
+	       else p_estado<=inicio;
+	       end if;
 -----------------------------------------------------------
 					when reposo=>
                    if(RS(4)='1') then --se viene de inicio
