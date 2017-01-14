@@ -9,14 +9,17 @@ entity FSM is
 	 reset : in std_logic;
 	 clk : in std_logic;
 	 tframe : in std_logic; --seal vsinc del vga, est a 0 un clk al refrescar terminar una pantalla    
-	UP : in STD_LOGIC;
-	LEF : in STD_LOGIC;
-	RIG : in STD_LOGIC;
-	DOW : in STD_LOGIC;
+	 UP : in STD_LOGIC;
+	 LEF : in STD_LOGIC;
+	 RIG : in STD_LOGIC;
+	 DOW : in STD_LOGIC;
     bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
     bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
     bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
-    rw : out STD_LOGIC_vector(0 downto 0));--seal de lectura/escritura
+    rw : out STD_LOGIC_VECTOR(0 downto 0); --seal de lectura/escritura
+	 muerto : out STD_LOGIC; --señal para reiniciar
+	 revivo : in STD_LOGIC); --señal para saber que hemos terminado el reinicio
+	 
 	 end FSM;
 
 architecture Behavioral of FSM is
@@ -28,6 +31,7 @@ architecture Behavioral of FSM is
    signal pRS,RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
 signal mov,pmov :  STD_LOGIC_VECTOR (1 downto 0); --vector de movimiento
 signal direcciones : std_logic_vector (3 downto 0); --Para codificar el movimiento
+signal pmuerto : std_logic;
 begin
 	
 direcciones(0)<=UP;
@@ -65,8 +69,8 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					casilla <= (others => '0');
 					RS <= (others=>'0');
                cuenta<=(others=>'0');
-					
-	   	mov<="00";
+					muerto <= '1';
+					mov<="00";
            elsif (rising_edge(clk) and reset='0' and tframe='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
@@ -76,12 +80,13 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					nxDserp <= pnxDserp;
 					RS <= pRS;
 					mov<=pmov;
+					muerto <= pmuerto;
            end if;
        end process;
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla)
+   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla,revivo)
        begin
 				pDserp <= Dserp;
 			  pnxDserp <= nxDserp;
@@ -90,6 +95,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 			  p_cuenta <= cuenta;
 			  bdir <= (others => '0');
 			  bdatin <= (others => '0');
+			  pmuerto <= '0';
            case estado is
 -----------------------------------------------------------
 					when inicio =>
@@ -258,7 +264,13 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                when KO=>
 					rw<="0";
 					pRS <= RS;
-					p_estado <= inicio;
+					if (revivo='1') then
+						p_estado <= inicio;
+						pmuerto <= '0';
+					else 
+						p_estado <= KO;
+						pmuerto<='1';
+					end if;
            end case;
        end process;
 		 
