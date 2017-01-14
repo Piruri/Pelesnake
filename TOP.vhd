@@ -76,11 +76,11 @@ Component FSM is
 		bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
 		bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
 		bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
-		rw : out STD_LOGIC_VECTOR (0 downto 0);--señal de lectura/escritura
+		rw : out STD_LOGIC_VECTOR (0 downto 0));--señal de lectura/escritura
 		end COMPONENT;
 
-signal BdataPlot, BdatFSMin, BdatFSMout : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
-Signal RGBin, yxtab ,BdirFSMt, Bdattabin, Bdattabout: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
+signal BdataPlot, BdatFSMin, BdatFSMout: STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
+Signal RGBin, yxtab ,BdirFSMt: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
 signal Vsincs, Hsincs : STD_LOGIC;
 signal uno,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
@@ -118,8 +118,10 @@ tablerito : tablero
 	  clka=>clk,
 	  wea=>rwFSM,
 	  addra=> BdirFSMt,
-	  dina=>Bdattabin,
-	  douta =>Bdattabout,
+	  dina (7 downto 4) => "0000",
+	  dina (3 downto 0) =>BdatFSMin,
+	  douta (7 downto 4) => open,
+	  douta (3 downto 0) =>BdatFSMout,
 	  clkb => clk,
 	  web => uno,
 	  addrb => yxtab,
