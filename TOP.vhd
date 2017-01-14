@@ -73,21 +73,17 @@ Component FSM is
 		LEF : in STD_LOGIC;
 		RIG : in STD_LOGIC;
 		DOW : in STD_LOGIC;
-	-- FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
 		bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
 		bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
 		bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
 		rw : out STD_LOGIC_VECTOR (0 downto 0);--señal de lectura/escritura
-		muerto : out STD_LOGIC; --es una señal para que el top se ponga a resetear la chulamaquina
-		revivio : in STD_LOGIC); -- nos indica que el top ya ha resetado la chulamaquina (chulamaquina igual a tablero)
-end COMPONENT;
---
+		end COMPONENT;
+
 signal BdataPlot, BdatFSMin, BdatFSMout : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
 Signal RGBin, yxtab ,BdirFSMt, Bdattabin, Bdattabout: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
 signal Vsincs, Hsincs : STD_LOGIC;
 signal uno,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
-signal muerte : STD_LOGIC;--rw de FSM
 
 begin
 uno<="1";
@@ -111,7 +107,6 @@ VGA : vga_driver_project
 Plot : Plotter
     Port Map ( clk =>clk,
 		reset=>reset,
-		--FSM : in  STD_LOGIC;
 		Y =>Y,
 		X =>X,
 		objeto => BdataPlot,
@@ -142,12 +137,9 @@ Maquinita : FSM
 		LEF => Lef,
 		RIG => Rig,
 		DOW => Dow,
-	-- FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
 		bdir => BdirFSMt,
 		bdatin => BdatFSMin,
 		bdatout => BdatFSMout,
-		rw => rwFSM,
-		muerto => muerte,
-		revivio => muerte);
+		rw => rwFSM);
 		
 end Behavioral;
