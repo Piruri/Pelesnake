@@ -17,7 +17,9 @@ entity TOP is
            Lef : in  STD_LOGIC;
            Rig : in  STD_LOGIC;
            Dow : in  STD_LOGIC;
-           RGB : out  STD_LOGIC_VECTOR (7 downto 0));
+           RGB : out  STD_LOGIC_VECTOR (7 downto 0);
+			  Vsinc : out STD_LOGIC;
+			  Hsinc : out STD_LOGIC);
 end TOP;
 
 architecture Behavioral of TOP is
@@ -66,40 +68,43 @@ Component FSM is
     Port (
 		reset : in std_logic;
 		clk : in std_logic;
-		tframe : in std_logic; --señal vsinc del vga, está a 0 un clk al refrescar terminar una pantalla    
+		tframe : in std_logic; --señal Vsincs del vga, está a 0 un clk al refrescar terminar una pantalla    
 		UP : in STD_LOGIC;
 		LEF : in STD_LOGIC;
 		RIG : in STD_LOGIC;
 		DOW : in STD_LOGIC;
 	-- FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --información que se enviará al plotter y a la musica
 		bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
-		bdatin : out  STD_LOGIC_VECTOR (4 downto 0); --bus datos que introduce info en la memoria
-		bdatout : in  STD_LOGIC_VECTOR (4 downto 0); --bus datos que saxa datos de la memoria
-		rw : out STD_LOGIC;--señal de lectura/escritura
+		bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
+		bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
+		rw : out STD_LOGIC_VECTOR (0 downto 0);--señal de lectura/escritura
 		muerto : out STD_LOGIC; --es una señal para que el top se ponga a resetear la chulamaquina
 		revivio : in STD_LOGIC); -- nos indica que el top ya ha resetado la chulamaquina (chulamaquina igual a tablero)
 end COMPONENT;
 --
 signal BdataPlot, BdatFSMin, BdatFSMout : STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
-Signal RGBin, RGBout, yxtab ,BdirFSMt, Bdattabin, Bdattabout: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
+Signal RGBin, yxtab ,BdirFSMt, Bdattabin, Bdattabout: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
-signal Vsinc, Hsinc : STD_LOGIC;
+signal Vsincs, Hsincs : STD_LOGIC;
 signal uno,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
 signal muerte : STD_LOGIC;--rw de FSM
 
 begin
 uno<="1";
+Hsinc <= Hsincs;
+Vsinc <= Vsincs;
+
 VGA : vga_driver_project
     Port Map( clk=>clk,
            reset=>reset,
            RED_in =>RGBin(7 downto 5),
            GRN_in =>RGBin(4 downto 2),
            BLUE_in =>RGBin(1 downto 0),
-			  HS =>hsinc,
-			  VS =>vsinc,
-           RED =>RGBout(7 downto 5),
-           GRN =>RGBout(4 downto 2),
-           BLUE =>RGBout(1 downto 0),
+			  HS =>Hsincs,
+			  VS =>Vsincs,
+           RED =>RGB(7 downto 5),
+           GRN =>RGB(4 downto 2),
+           BLUE =>RGB(1 downto 0),
            eje_x =>X,
            eje_y =>Y);
 
@@ -111,7 +116,7 @@ Plot : Plotter
 		X =>X,
 		objeto => BdataPlot,
 		yxt => yxtab,
-		RGB => RGBout);
+		RGB => RGBin);
 		
 tablerito : tablero	
 	PORT Map(
@@ -124,14 +129,15 @@ tablerito : tablero
 	  web => uno,
 	  addrb => yxtab,
 	  dinb => "00000000",
-	  doutb => BdataPlot);
+	  doutb (7 downto 4) => open,
+	  doutb (3 downto 0) => BdataPlot);
 		
 Maquinita : FSM 
 	Generic Map( CNT =>26) -- numero de veces que cuenta antes de hacer otro movimiento
     Port Map(
 		reset => reset,
 		clk => clk,
-		tframe => Vsinc,
+		tframe => Vsincs,
 		UP => Up,
 		LEF => Lef,
 		RIG => Rig,
