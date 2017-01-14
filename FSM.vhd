@@ -26,7 +26,6 @@ architecture Behavioral of FSM is
    type mi_estado is (Inicio, Reposo, Movimiento,  Analisis, KO, Avanza, Sumar, OK); --estados
    signal estado,p_estado: mi_estado;
    signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
-   signal flag: std_logic; --para evitar que cuente de ms
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
    signal pcasilla, casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
    signal pRS,RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
@@ -59,19 +58,19 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   estadosync: process (clk, reset) --Actualizacin de datos
+   estadosync: process (clk, reset, tframe) --Actualizacin de datos
        begin
            if (reset='1')then
                estado<=Inicio;
-					Dserp <= (others => '0'); -- Direcciones iniciales de posicion
+					Dserp <= "01101000"; -- Direcciones iniciales de posicion
 					nxDserp <= (others => '0');
-					Dcola <= (others => '0');
+					Dcola <= "01101000";
 					casilla <= (others => '0');
 					RS <= (others=>'0');
                cuenta<=(others=>'0');
 					
 	   	mov<="00";
-           elsif (rising_edge(clk) and reset='0') then
+           elsif (rising_edge(clk) and reset='0' and tframe='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
 					Dserp <= pDserp;
