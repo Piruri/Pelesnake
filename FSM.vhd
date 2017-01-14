@@ -81,7 +81,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla,)
+   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla)
        begin
 				pDserp <= Dserp;
 			  pnxDserp <= nxDserp;
