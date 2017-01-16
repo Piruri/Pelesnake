@@ -2,4 +2,4 @@
 
 VHDL programming
 
-Juego SIN REINICIO
+Juego CON REINICIO
