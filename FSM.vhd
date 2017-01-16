@@ -29,6 +29,8 @@ architecture Behavioral of FSM is
    signal pRS,RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
 signal mov,pmov :  STD_LOGIC_VECTOR (1 downto 0); --vector de movimiento
 signal direcciones : std_logic_vector (3 downto 0); --Para codificar el movimiento
+signal bdirs, pbdirs : std_logic_vector (7 downto 0); --Señales para hacer sincronas esa salida
+signal bdatins, pbdatins : std_logic_vector (3 downto 0); -- Señales para hacer sincrona la salida
 begin
 	
 direcciones(0)<=UP;
@@ -67,10 +69,12 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					RS <= (others=>'0');
                cuenta<=(others=>'0');
 					mov<="00";
+					bdirs <= (others => '0'); -- OJO, si reset=1, la dir de mem va a 0.
+					bdatins <= (others => '0'); -- OJO. Este realmente debe tener el valor que vaya en la dir "00..0"
            elsif (rising_edge(clk) and reset='0') then
                estado<=p_estado;
 					if(tframe='0') then
-               cuenta<=p_cuenta;
+						cuenta<=p_cuenta;
 					end if;
 					Dserp <= pDserp;
 					Dcola <= pDcola;
@@ -78,9 +82,14 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					nxDserp <= pnxDserp;
 					RS <= pRS;
 					mov<=pmov;
+					bdirs <= pbdirs;
+					bdatins <= pbdatins;
            end if;
        end process;
 -----------------------------------------------------------
+-- Conexion de las señales a las salidas.
+bdir <= bdirs;
+bdatin <= bdatins;
 -----------------------------------------------------------
 
    combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla)
@@ -90,8 +99,8 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 			  pDcola <= Dcola;
 			  pcasilla <= casilla;
 			  p_cuenta <= cuenta;
-			  bdir <= (others => '0');
-			  bdatin <= (others => '0');
+			  pbdirs <= bdirs;
+			  pbdatins <= bdatins;
            case estado is
 -----------------------------------------------------------
 					when inicio =>
@@ -201,7 +210,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					 p_estado<=analisis;
 -----------------------------------------------------------
 					when analisis=>
-						bdir<=std_logic_vector(nxDserp); --se escribe la casilla
+						pbdirs<=std_logic_vector(nxDserp); --se escribe la casilla
 						pcasilla<=bdatout;
 						if (cuenta=2) then
 								p_cuenta<=(others=>'0');
@@ -228,17 +237,17 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
 						if (cuenta=2) then 
-							bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-							bdatin(3 downto 2)<="10";
-							bdatin(1 downto 0)<=mov;
+							pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
+							pbdatins(3 downto 2)<="10";
+							pbdatins(1 downto 0)<=mov;
 							p_estado<=reposo;
 							pDserp <= nxDserp; --Actualizar valor de la Dserp.
 							p_cuenta <= (others=>'0');
 						else	
 							
-							bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
-							bdatin(3 downto 2)<="01";
-							bdatin(1 downto 0)<=mov;
+							pbdirs<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
+							pbdatins(3 downto 2)<="01";
+							pbdatins(1 downto 0)<=mov;
 							p_estado<=sumar;
 							p_cuenta<=cuenta +1;
 						end if;	
@@ -246,22 +255,22 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						when OK=>
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
-						bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
-						bdatin(3 downto 2)<="01";
-						bdatin(1 downto 0)<=mov;
+						pbdirs<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
+						pbdatins(3 downto 2)<="01";
+						pbdatins(1 downto 0)<=mov;
 						
-						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdatin(3 downto 2)<="10";
-						bdatin(1 downto 0)<=mov;
+						pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
+						pbdatins(3 downto 2)<="10";
+						pbdatins(1 downto 0)<=mov;
 						pDserp <= nxDserp; --Actualizar valor de la Dserp.
 						
 						rw<="0"; -- se va a leer
-						bdir<=std_logic_vector(Dcola); --se busca la cola
+						pbdirs<=std_logic_vector(Dcola); --se busca la cola
 						pcasilla<=bdatout; --se guarda el valor
 						
 						rw<="1"; --se va a escribir
-						bdir<=std_logic_vector(Dcola); --se busca la cola
-						bdatin<="0000"; --se vacia la direccion de la cola
+						pbdirs<=std_logic_vector(Dcola); --se busca la cola
+						pbdatins<="0000"; --se vacia la direccion de la cola
 						case casilla(1 downto 0) is --se actualiza la direccion de la cola
 							when "00" =>
 								pDcola <= Dcola - 16; --se resta una linea vertical
@@ -283,4 +292,4 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
            end case;
        end process;
 		 
-end Behavioral;
+end Behavioral;;
