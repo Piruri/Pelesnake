@@ -67,9 +67,11 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					RS <= (others=>'0');
                cuenta<=(others=>'0');
 					mov<="00";
-           elsif (rising_edge(clk) and reset='0' and tframe='0') then
+           elsif (rising_edge(clk) and reset='0') then
                estado<=p_estado;
+					if(tframe='0') then
                cuenta<=p_cuenta;
+					end if;
 					Dserp <= pDserp;
 					Dcola <= pDcola;
 					casilla <= pcasilla;
@@ -96,15 +98,19 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						rw<="0";
 						pRS (3 downto 0) <= (others => '0');	
 						pRS(4)<='1'; --bit de inicio
-	       if (direcciones/="0000") then p_estado<=reposo;
-	       else p_estado<=inicio;
-	       end if;
+				 if (direcciones/="0000") then 
+					pRS(1 downto 0)<=mov;
+					p_estado<=inicio;
+				elsif (direcciones="0000" and mov/="00") then
+					p_estado<=reposo;
+				 else 
+					p_estado<=inicio;
+				 end if;
 -----------------------------------------------------------
 					when reposo=>
 							rw<="0";
 							pRS (3 downto 0) <= RS (3 downto 0);
                    if(RS(4)='1') then --se viene de inicio
-                    pRS(1 downto 0)<=mov;
                      pRS(4)<='0';
                      p_estado<=movimiento;
                  else
