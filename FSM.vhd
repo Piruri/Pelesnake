@@ -9,18 +9,16 @@ entity FSM is
 	 reset : in std_logic;
 	 clk : in std_logic;
 	 tframe : in std_logic; --seal vsinc del vga, est a 0 un clk al refrescar terminar una pantalla    
-	UP : in STD_LOGIC;
-	LEF : in STD_LOGIC;
-	RIG : in STD_LOGIC;
-	DOW : in STD_LOGIC;
---  FSM_Plotter : out  STD_LOGIC_VECTOR (1 downto 0); --informacin que se enviar al plotter y a la musica
+	 UP : in STD_LOGIC;
+	 LEF : in STD_LOGIC;
+	 RIG : in STD_LOGIC;
+	 DOW : in STD_LOGIC;
     bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
     bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
     bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
-    rw : out STD_LOGIC_vector(0 downto 0);--seal de lectura/escritura
-	 muerto : out STD_LOGIC; --es una seal para que el top se ponga a resetear la chulamaquina
-	 revivio : in STD_LOGIC); -- nos indica que el top ya ha resetado la chulamaquina (chulamaquina igual a tablero)
-end FSM;
+    rw : out STD_LOGIC_VECTOR(0 downto 0)); --seal de lectura/escritura
+	 
+	 end FSM;
 
 architecture Behavioral of FSM is
    type mi_estado is (Inicio, Reposo, Movimiento,  Analisis, KO, Avanza, Sumar, OK); --estados
@@ -52,8 +50,8 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 				pmov <= mov;
 		end case;
 	end process;
------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
 
 -----------------------------------------------------------
 -----------------------------------------------------------
@@ -68,8 +66,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 					casilla <= (others => '0');
 					RS <= (others=>'0');
                cuenta<=(others=>'0');
-					
-	   	mov<="00";
+					mov<="00";
            elsif (rising_edge(clk) and reset='0' and tframe='0') then
                estado<=p_estado;
                cuenta<=p_cuenta;
@@ -84,7 +81,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 -----------------------------------------------------------
 -----------------------------------------------------------
 
-   combi: process(estado,cuenta,mov,bdatout,dserp,dcola,direcciones,rs,nxDserp,casilla,revivio)
+   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla)
        begin
 				pDserp <= Dserp;
 			  pnxDserp <= nxDserp;
@@ -96,16 +93,14 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
            case estado is
 -----------------------------------------------------------
 					when inicio =>
-					muerto<='0';
 						rw<="0";
-						pRS (3 downto 0) <= RS (3 downto 0);	
+						pRS (3 downto 0) <= (others => '0');	
 						pRS(4)<='1'; --bit de inicio
 	       if (direcciones/="0000") then p_estado<=reposo;
 	       else p_estado<=inicio;
 	       end if;
 -----------------------------------------------------------
 					when reposo=>
-							muerto<='0';
 							rw<="0";
 							pRS (3 downto 0) <= RS (3 downto 0);
                    if(RS(4)='1') then --se viene de inicio
@@ -118,7 +113,6 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                end if;
 -----------------------------------------------------------
 					when Movimiento=>
-					muerto<='0';
 						rw<="0";
                  case RS(1 downto 0) is --se ve el ultimo movimiento
                     when "00" => --arriba
@@ -183,7 +177,6 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                    end case;
 -----------------------------------------------------------
 					when analisis=>
-					muerto<='0';
 					rw<="0";
 					pRS <= RS;
                 case RS(1 downto 0) is --se genera la proxima direccion de la cabeza
@@ -208,7 +201,6 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						end if;
 -----------------------------------------------------------
 					when avanza=>
-					muerto<='0';
 					rw<="0";
 					pRS <= RS;
 						if(casilla(1)='1')then --si el bit 1 es 1 es una seta
@@ -218,7 +210,6 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 		 				 end if;
 -----------------------------------------------------------
                when sumar=>
-					muerto<='0';
 					pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
 						bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
@@ -232,7 +223,6 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						pDserp <= nxDserp; --Actualizar valor de la Dserp.
 -----------------------------------------------------------
 						when OK=>
-						muerto<='0';
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
 						bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
@@ -268,11 +258,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                when KO=>
 					rw<="0";
 					pRS <= RS;
-						muerto<='1';
-						if (revivio='1') then
-                   p_estado <= inicio;
-						else p_estado<=estado;
-						end if;
+					p_estado <= inicio;
            end case;
        end process;
 		 
