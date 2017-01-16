@@ -21,9 +21,9 @@ entity FSM is
 	 end FSM;
 
 architecture Behavioral of FSM is
-   type mi_estado is (Inicio, Reposo, Movimiento,  Analisis, KO, Avanza, Sumar, OK); --estados
+   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza, Sumar, OK); --estados
    signal estado,p_estado: mi_estado;
-   signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
+   signal cuenta, p_cuenta: unsigned(2 downto 0); --contador
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
    signal pcasilla, casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
    signal pRS,RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
@@ -125,7 +125,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 						  pRS (4 downto 2) <= RS (4 downto 2);
                          if (mov/="11" and cuenta = CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
-									 p_estado <= analisis;
+									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
                          else
                             pRS(1 downto 0)<="00"; --si no se mantiene
@@ -137,7 +137,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 							pRS (4 downto 2) <= RS (4 downto 2);
                          if (mov/="10" and cuenta = CNT) then
                             pRS(1 downto 0)<=mov;
-									 p_estado <= analisis;
+									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
                          else
                             pRS(1 downto 0)<=RS(1 downto 0);
@@ -149,7 +149,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 							pRS (4 downto 2) <= RS (4 downto 2);
                          if (mov/="01"and cuenta = CNT) then
                             pRS(1 downto 0)<=mov;
-									 p_estado <= analisis;
+									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
                          else
                             pRS(1 downto 0)<=RS(1 downto 0);
@@ -161,7 +161,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 							pRS (4 downto 2) <= RS (4 downto 2);
                         if (mov/="00"and cuenta = CNT) then
                             pRS(1 downto 0)<=mov;
-									 p_estado <= analisis;
+									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
                          else
                             pRS(1 downto 0)<=RS(1 downto 0);
@@ -173,7 +173,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 								 pRS (4 downto 2) <= RS (4 downto 2);
 								if (mov/="11"and cuenta = CNT) then
                             pRS(1 downto 0)<=mov;
-									 p_estado <= analisis;
+									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
                          else
                             pRS(1 downto 0)<=RS(1 downto 0);
@@ -182,7 +182,7 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                          end if;
                    end case;
 -----------------------------------------------------------
-					when analisis=>
+					when CalculoCasilla=>
 					rw<="0";
 					pRS <= RS;
                 case RS(1 downto 0) is --se genera la proxima direccion de la cabeza
@@ -198,12 +198,21 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
                              pnxDserp <= Dserp;
                   end case;
 						rw<="0";
-                bdir<=std_logic_vector(nxDserp); --se escribe la casilla
-                pcasilla<=bdatout;
-						if(casilla(3)='1')then --si el bMs es uno es muro o cola
-                    p_estado<=ko;
-						else
-                    p_estado<=avanza; --si no avanza
+					 p_estado<=analisis;
+-----------------------------------------------------------
+					when analisis=>
+						bdir<=std_logic_vector(nxDserp); --se escribe la casilla
+						pcasilla<=bdatout;
+						if (cuenta=2) then
+								p_cuenta<=(others=>'0');
+								if(casilla(3)='1')then --si el bMs es uno es muro o cola
+								  p_estado<=ko;
+								else
+								  p_estado<=avanza; --si no avanza
+								end if;
+						else 
+							p_cuenta<=cuenta+1;
+							p_estado<=analisis;
 						end if;
 -----------------------------------------------------------
 					when avanza=>
@@ -216,17 +225,23 @@ comb:process (direcciones,mov) --Codificacin para el movimiento
 		 				 end if;
 -----------------------------------------------------------
                when sumar=>
-					pRS <= RS;
+						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
-						bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
-						bdatin(3 downto 2)<="01";
-						bdatin(1 downto 0)<=mov;
-						  
-						bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						bdatin(3 downto 2)<="10";
-                  bdatin(1 downto 0)<=mov;
-						p_estado<=reposo;
-						pDserp <= nxDserp; --Actualizar valor de la Dserp.
+						if (cuenta=2) then 
+							bdir<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
+							bdatin(3 downto 2)<="10";
+							bdatin(1 downto 0)<=mov;
+							p_estado<=reposo;
+							pDserp <= nxDserp; --Actualizar valor de la Dserp.
+							p_cuenta <= (others=>'0');
+						else	
+							
+							bdir<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
+							bdatin(3 downto 2)<="01";
+							bdatin(1 downto 0)<=mov;
+							p_estado<=sumar;
+							p_cuenta<=cuenta +1;
+						end if;	
 -----------------------------------------------------------
 						when OK=>
 						pRS <= RS;
