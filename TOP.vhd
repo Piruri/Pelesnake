@@ -83,7 +83,7 @@ Component FSM is
 signal BdataPlot, BdatFSMin, BdatFSMout: STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
 Signal RGBin, yxtab ,BdirFSMt: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, --Bdattabin, Bdattabout, Bdirtab Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
-signal Vsincs, Hsincs, muertos, revivos : STD_LOGIC;
+signal Vsincs, Hsincs : STD_LOGIC;
 signal cero,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
 signal nada1, nada2, nada3 :std_logic_vector (3 downto 0);
 	
