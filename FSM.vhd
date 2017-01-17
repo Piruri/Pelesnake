@@ -21,7 +21,7 @@ entity FSM is
 	 end FSM;
 
 architecture Behavioral of FSM is
-   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza, Sumar, OK); --estados
+   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK); --estados
    signal estado,p_estado: mi_estado;
    signal cuenta, p_cuenta: unsigned(2 downto 0); --contador
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
@@ -47,8 +47,6 @@ comb:process (direcciones,mov,tframe, flag) --Codificacin para el movimiento
 		end if;
 		if (flag='0' and tframe='0') then
 		auxtframe<='1';
---		elsif (flag='1' and tframe='0') then
---		auxtframe<='0';
 		else
 		auxtframe<='0';
 		end if;
@@ -116,8 +114,8 @@ bdatin <= bdatins;
 			  pDcola <= Dcola;
 			  pcasilla <= casilla;
 			  p_cuenta <= cuenta;
-			  pbdirs <= bdirs;
-			  pbdatins <= bdatins;
+			  pbdirs <= bdirs; --aunque la señal este aquí sigue dando latch
+			  pbdatins <= bdatins; -- the same
            case estado is
 -----------------------------------------------------------
 					when inicio =>
@@ -155,7 +153,10 @@ bdatin <= bdatins;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
+									  pRS(1 downto 0)<="00"; --si no se mantiene
+									  p_estado<=estado;
                          else
+									 p_cuenta<=cuenta;
                             pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
                          end if;
@@ -168,8 +169,11 @@ bdatin <= bdatins;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
+									  pRS(1 downto 0)<="01"; --si no se mantiene
+									  p_estado<=estado;
                          else
-                            pRS(1 downto 0)<="00"; --si no se mantiene
+									p_cuenta<=cuenta;
+                            pRS(1 downto 0)<="01"; --si no se mantiene
 									 p_estado <= estado;
                          end if;
 								 
@@ -181,8 +185,11 @@ bdatin <= bdatins;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
+									  pRS(1 downto 0)<="10"; --si no se mantiene
+									  p_estado<=estado;
                          else
-                            pRS(1 downto 0)<="00"; --si no se mantiene
+									p_cuenta<=cuenta;
+                            pRS(1 downto 0)<="10"; --si no se mantiene
 									 p_estado <= estado;
                          end if;
 								 
@@ -194,8 +201,11 @@ bdatin <= bdatins;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
+									  pRS(1 downto 0)<="11"; --si no se mantiene
+									  p_estado<=estado;
                          else
-                            pRS(1 downto 0)<="00"; --si no se mantiene
+									p_cuenta<=cuenta;
+                            pRS(1 downto 0)<="11"; --si no se mantiene
 									 p_estado <= estado;
                          end if;
 								 
@@ -207,7 +217,10 @@ bdatin <= bdatins;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
+									  pRS(1 downto 0)<="00"; --si no se mantiene
+									  p_estado<=estado;
                          else
+									p_cuenta<=cuenta;
                             pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
                          end if;
@@ -228,10 +241,11 @@ bdatin <= bdatins;
                         when others =>
                              pnxDserp <= Dserp;
                   end case;
-						rw<="0";
 					 p_estado<=analisis;
 -----------------------------------------------------------
 					when analisis=>
+					rw<="0";
+						pRS<=RS;
 						pbdirs<=std_logic_vector(nxDserp); --se escribe la casilla
 						pcasilla<=bdatout;
 						if (cuenta=6) then
@@ -252,7 +266,7 @@ bdatin <= bdatins;
 						if(casilla(1)='1')then --si el bit 1 es 1 es una seta
                     p_estado<=sumar;
 						else
-                    p_estado<=ok; --si no, esta vacio
+                    p_estado<=OK1; --si no, esta vacio
 		 				 end if;
 -----------------------------------------------------------
                when sumar=>
@@ -274,38 +288,88 @@ bdatin <= bdatins;
 							p_cuenta<=cuenta +1;
 						end if;	
 -----------------------------------------------------------
-						when OK=>
+						when OK1=> --nueva cabeza de movimiento normal
+						
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
-						pbdirs<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
-						pbdatins(3 downto 2)<="01";
+						if (cuenta=2) then
+						pbdirs<=std_logic_vector(nxDserp); --se elige la nueva dirección
+						pbdatins(3 downto 2)<="01"; --se escribe la nueva cabeza
 						pbdatins(1 downto 0)<=mov;
+						p_estado<=OK2;
+						p_cuenta<=(others=>'0');
+						else
+						pbdirs<=std_logic_vector(nxDserp); --se elige la nueva dirección
+						p_cuenta<=cuenta + 1;
+						p_estado<=OK1;
+						end if;
+-----------------------------------------------------------
+						when OK2=> --cuerpo en la antigua cabeza
 						
-						pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
-						pbdatins(3 downto 2)<="10";
+						pRS <= RS;
+						rw<="1"; --se va a escribir en la memoria
+						if (cuenta=2) then
+						pbdirs<=std_logic_vector(Dserp); --se elige la antigua dirección
+						pbdatins(3 downto 2)<="10"; --se escribe un nuevo cuerpo
 						pbdatins(1 downto 0)<=mov;
-						pDserp <= nxDserp; --Actualizar valor de la Dserp.
-						
-						rw<="0"; -- se va a leer
-						pbdirs<=std_logic_vector(Dcola); --se busca la cola
-						pcasilla<=bdatout; --se guarda el valor
-						
-						rw<="1"; --se va a escribir
-						pbdirs<=std_logic_vector(Dcola); --se busca la cola
-						pbdatins<="0000"; --se vacia la direccion de la cola
-						case casilla(1 downto 0) is --se actualiza la direccion de la cola
-							when "00" =>
-								pDcola <= Dcola - 16; --se resta una linea vertical
-							when "01" =>
-                        pDcola <= Dcola + 1; --se suma una horizontal    
-							when "10" =>
-                        pDcola <= Dcola - 1; --se resta una horizontal
-							when "11" =>
-                        pDcola <= Dcola + 16; --se suma una vertical
-							when others =>
-								pDcola <= Dcola;
-							end case;
-						p_estado<=reposo; 
+						p_estado<=OK; --OK3
+						p_cuenta<=(others=>'0');
+						else
+						pbdirs<=std_logic_vector(Dserp); --se elige la antigua dirección
+						p_cuenta<=cuenta + 1;
+						p_estado<=OK2;
+						end if;
+-----------------------------------------------------------
+--						when OK3=> --se busca la cola y se guarda en casilla
+--						
+--						pRS <= RS;
+--						rw<="0"; --se va a leer de la memoria
+--						if (cuenta=2) then
+--						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
+--						pcasilla<=bdatout;
+--						p_estado<=OK;
+--						p_cuenta<=(others=>'0');
+--						else
+--						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
+--						p_cuenta<=cuenta + 1;
+--						p_estado<=OK2;
+--						end if;
+
+-----------------------------------------------------------
+						when OK=> --se busca la cola y se guarda en casilla
+						pRS <= RS;
+						if (cuenta>4) then
+							rw<="1"; --se va a escribir
+							pbdirs<=std_logic_vector(Dcola); --se busca la cola
+							if (cuenta=6) then
+								p_cuenta<=(others=>'0');
+								p_estado<=reposo;
+								pbdatins<="0000"; --se vacia la direccion de la cola
+								case casilla(1 downto 0) is --se actualiza la direccion de la cola
+									when "00" =>
+										pDcola <= Dcola - 16; --se resta una linea vertical
+									when "01" =>
+										pDcola <= Dcola + 1; --se suma una horizontal    
+									when "10" =>
+										pDcola <= Dcola - 1; --se resta una horizontal
+									when "11" =>
+										pDcola <= Dcola + 16; --se suma una vertical
+									when others =>
+										pDcola <= Dcola;
+									end case;
+							else
+								p_cuenta<=cuenta+1;
+								p_estado<=OK;
+							end if;
+						else						
+							rw<="0"; -- se va a leer
+							pbdirs<=std_logic_vector(Dcola); --se busca la cola
+							pcasilla<=bdatout; --se guarda el valor
+							p_cuenta<=cuenta+1;
+							p_estado<=OK;
+						end if;
+
+						 
 -----------------------------------------------------------
                when KO=>
 					rw<="0";
