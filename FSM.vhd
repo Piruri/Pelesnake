@@ -149,63 +149,67 @@ bdatin <= bdatins;
                  case RS(1 downto 0) is --se ve el ultimo movimiento
                     when "00" => --arriba
 						  pRS (4 downto 2) <= RS (4 downto 2);
-                         if (mov/="11" and auxtframe = '1') then --si no se esta realizando el mov contrario se guarda
+                         if (mov/="11" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
-								
+								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
+								     p_cuenta<=cuenta+1;
                          else
                             pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
-                            p_cuenta<=cuenta+1;
                          end if;
           
                      when "01" => --derecha
 							pRS (4 downto 2) <= RS (4 downto 2);
-                         if (mov/="10" and auxtframe = '1') then
+                         if (mov/="10" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
+								     p_cuenta<=cuenta+1;
                          else
-                            pRS(1 downto 0)<=RS(1 downto 0);
+                            pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
-                            p_cuenta<=cuenta+1;
                          end if;
 								 
                      when "10" => --izquierda
 							pRS (4 downto 2) <= RS (4 downto 2);
-                         if (mov/="01"and auxtframe = '1') then
+                         if (mov/="01" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
+								     p_cuenta<=cuenta+1;
                          else
-                            pRS(1 downto 0)<=RS(1 downto 0);
+                            pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
-                            p_cuenta<=cuenta+1;
                          end if;
 								 
                      when "11" => --abajo
 							pRS (4 downto 2) <= RS (4 downto 2);
-                        if (mov/="00"and auxtframe = '1') then
+                        if (mov/="00" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
+								     p_cuenta<=cuenta+1;
                          else
-                            pRS(1 downto 0)<=RS(1 downto 0);
+                            pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
-                            p_cuenta<=cuenta+1;
                          end if;
 								 
                          when others => --en otro caso(para evitar latch) se hace como si fuese hacia arriba
 								 pRS (4 downto 2) <= RS (4 downto 2);
-								if (mov/="11"and auxtframe = '1') then
+								if (mov/="11" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
+								     p_cuenta<=cuenta+1;
                          else
-                            pRS(1 downto 0)<=RS(1 downto 0);
+                            pRS(1 downto 0)<="00"; --si no se mantiene
 									 p_estado <= estado;
-                            p_cuenta<=cuenta+1;
                          end if;
                    end case;
 -----------------------------------------------------------
