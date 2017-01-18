@@ -23,7 +23,7 @@ entity FSM is
 architecture Behavioral of FSM is
    type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK); --estados
    signal estado,p_estado: mi_estado;
-   signal cuenta, p_cuenta: unsigned(2 downto 0); --contador
+   signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
    signal pcasilla, casilla : std_logic_vector (3 downto 0); --registro para analizar las casillas
    signal pRS,RS :std_logic_vector (4 downto 0); --bms bit de inicio, 3 y 2 mov cola, 1 y 0 mov cabeza
