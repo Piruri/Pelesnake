@@ -21,7 +21,7 @@ entity FSM is
 	 end FSM;
 
 architecture Behavioral of FSM is
-   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK); --estados
+   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK3, OK); --estados
    signal estado,p_estado: mi_estado;
    signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
@@ -320,57 +320,48 @@ bdatin <= bdatins;
 						p_estado<=OK2;
 						end if;
 -----------------------------------------------------------
---						when OK3=> --se busca la cola y se guarda en casilla
---						
---						pRS <= RS;
---						rw<="0"; --se va a leer de la memoria
---						if (cuenta=2) then
---						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
---						pcasilla<=bdatout;
---						p_estado<=OK;
---						p_cuenta<=(others=>'0');
---						else
---						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
---						p_cuenta<=cuenta + 1;
---						p_estado<=OK2;
---						end if;
+						when OK3=> --se busca la cola y se guarda en casilla
+						
+						pRS <= RS;
+						rw<="0"; --se va a leer de la memoria
+						if (cuenta=2) then
+						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
+						pcasilla<=bdatout;
+						p_estado<=OK;
+						p_cuenta<=(others=>'0');
+						else
+						pbdirs<=std_logic_vector(Dcola); --se elige la dirección de la cola
+						p_cuenta<=cuenta + 1;
+						p_estado<=OK2;
+						end if;
 
 -----------------------------------------------------------
-						when OK=> --se busca la cola y se guarda en casilla
+						when OK=> --se limpia la cola
 						pRS <= RS;
 						pDserp<=nxDserp;
+						pbdirs<=std_logic_vector(Dcola); --se busca la cola
+						rw<="1"; --se va a escribir
+						pbdatins<="0000"; --se vacia la direccion de la cola
 						if (cuenta>4) then
-							rw<="1"; --se va a escribir
-							pbdirs<=std_logic_vector(Dcola); --se busca la cola
-							if (cuenta=6) then
-								p_cuenta<=(others=>'0');
-								p_estado<=reposo;
-								pbdatins<="0000"; --se vacia la direccion de la cola
-								case casilla(1 downto 0) is --se actualiza la direccion de la cola
-									when "00" =>
-										pDcola <= Dcola - 16; --se resta una linea vertical
-									when "01" =>
-										pDcola <= Dcola + 1; --se suma una horizontal    
-									when "10" =>
-										pDcola <= Dcola - 1; --se resta una horizontal
-									when "11" =>
-										pDcola <= Dcola + 16; --se suma una vertical
-									when others =>
-										pDcola <= Dcola;
-									end case;
-							else
-								p_cuenta<=cuenta+1;
-								p_estado<=OK;
-							end if;
-						else						
-							rw<="0"; -- se va a leer
-							pbdirs<=std_logic_vector(Dcola); --se busca la cola
-							pcasilla<=bdatout; --se guarda el valor
+							p_cuenta<=(others=>'0');
+							p_estado<=reposo;
+							case casilla(1 downto 0) is --se actualiza la direccion de la cola
+								when "00" =>
+									pDcola <= Dcola - 16; --se resta una linea vertical
+								when "01" =>
+									pDcola <= Dcola + 1; --se suma una horizontal    
+								when "10" =>
+									pDcola <= Dcola - 1; --se resta una horizontal
+								when "11" =>
+									pDcola <= Dcola + 16; --se suma una vertical
+								when others =>
+									pDcola <= Dcola;
+								end case;
+						else
 							p_cuenta<=cuenta+1;
 							p_estado<=OK;
 						end if;
-
-						 
+						
 -----------------------------------------------------------
                when KO=>
 					rw<="0";
