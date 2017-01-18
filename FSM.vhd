@@ -35,8 +35,8 @@ signal auxtframe,pflag,flag: std_logic;
 begin
 	
 direcciones(0)<=UP;
-direcciones(1)<=LEF;
-direcciones(2)<=RIG;
+direcciones(1)<=RIG;
+direcciones(2)<=LEF;
 direcciones(3)<=DOW;
 comb:process (direcciones,mov,tframe, flag) --Codificacin para el movimiento
 	begin
@@ -53,13 +53,13 @@ comb:process (direcciones,mov,tframe, flag) --Codificacin para el movimiento
 				
 		
 		case direcciones is
-			when "0001" => --
+			when "0001" => -- arriba
 				pmov <= "00";
-			when "0010" => --
+			when "0010" => -- derecha
 				pmov <= "01";
-			when "0100" =>
+			when "0100" => -- izquierda
 				pmov <= "10";
-			when "1000" =>
+			when "1000" => -- abajo
 				pmov <= "11";
 			when others =>
 				pmov <= mov;
@@ -338,6 +338,7 @@ bdatin <= bdatins;
 -----------------------------------------------------------
 						when OK=> --se busca la cola y se guarda en casilla
 						pRS <= RS;
+						pDserp<=nxDserp;
 						if (cuenta>4) then
 							rw<="1"; --se va a escribir
 							pbdirs<=std_logic_vector(Dcola); --se busca la cola
