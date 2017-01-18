@@ -64,11 +64,11 @@ COMPONENT tablero	PORT(
 END COMPONENT;
 
 Component FSM is
-	Generic( CNT: integer :=26); -- numero de veces que cuenta antes de hacer otro movimiento
+	Generic( CNT: integer :=31); -- numero de veces que cuenta antes de hacer otro movimiento
     Port (
 		reset : in std_logic;
 		clk : in std_logic;
-		tframe : in std_logic; --señal Vsincs del vga, está a 0 un clk al refrescar terminar una pantalla    
+		tframe : in std_logic; --seal Vsincs del vga, est a 0 un clk al refrescar terminar una pantalla    
 		UP : in STD_LOGIC;
 		LEF : in STD_LOGIC;
 		RIG : in STD_LOGIC;
@@ -76,18 +76,16 @@ Component FSM is
 		bdir : out  STD_LOGIC_VECTOR (7 downto 0); --bus direcciones
 		bdatin : out  STD_LOGIC_VECTOR (3 downto 0); --bus datos que introduce info en la memoria
 		bdatout : in  STD_LOGIC_VECTOR (3 downto 0); --bus datos que saxa datos de la memoria
-		rw : out STD_LOGIC_VECTOR (0 downto 0); --señal de lectura/escritura
-		muerto : out STD_LOGIC; --señal para reiniciar
-		revivo : in STD_LOGIC); --señal para saber que hemos terminado de reiniciar
+		rw : out STD_LOGIC_VECTOR (0 downto 0)); --seal de lectura/escritura
+
 		end COMPONENT;
 
 signal BdataPlot, BdatFSMin, BdatFSMout: STD_LOGIC_VECTOR(3 downto 0); --bus de datos del tablero al plotter(objeto del tablero), Bus data FSM introduce en la memoria, Bus data FSM lee de la memoria
-Signal RGBin, yxtab ,BdirFSMt, Bdattabin, Bdattabout, Bdirtab: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, Bus de datos del tablero, será utiñizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
+Signal RGBin, yxtab ,BdirFSMt: STD_LOGIC_VECTOR(7 downto 0); -- , , yx del plotter sl tablero, Bus direc FSM a Tablero, --Bdattabin, Bdattabout, Bdirtab Bus de datos del tablero, ser utiizado para reiniciar la partida, uno de entrada y otro de salida de la memoria.
 Signal X, Y : STD_LOGIC_VECTOR(9 downto 0);
-signal Vsincs, Hsincs, muertos, revivos : STD_LOGIC;
-signal cero,rwFSM ,rwreini: STD_LOGIC_VECTOR(0 downto 0);
-signal pk, k: unsigned (7 downto 0); --Variable para el bucle de reinicio
-signal pdoutareini, doutareini : std_logic_vector (3 downto 0); --Variable para reiniciar el tablero
+signal Vsincs, Hsincs : STD_LOGIC;
+signal cero,rwFSM : STD_LOGIC_VECTOR(0 downto 0);
+signal nada1, nada2, nada3 :std_logic_vector (3 downto 0);
 	
 
 begin
@@ -121,19 +119,21 @@ Plot : Plotter
 tablerito : tablero	
 	PORT Map(
 	  clka=>clk,
-	  wea=>rwreini,
-	  addra=> Bdirtab,
-	  dina => Bdattabin,
-	  douta =>Bdattabout,
+	  wea=>rwFSM,
+	  addra=> BdirFSMt,
+	  dina (7 downto 4) => nada1,
+	  dina (3 downto 0) => BdatFSMin,
+	  douta (7 downto 4) => nada2,
+	  douta (3 downto 0) => BdatFSMout,
 	  clkb => clk,
 	  web => cero,
 	  addrb => yxtab,
 	  dinb => "00000000",
-	  doutb (7 downto 4) => open,
+	  doutb (7 downto 4) => nada3,
 	  doutb (3 downto 0) => BdataPlot);
 		
 Maquinita : FSM 
-	Generic Map( CNT =>26) -- numero de veces que cuenta antes de hacer otro movimiento
+	Generic Map( CNT =>31) -- numero de veces que cuenta antes de hacer otro movimiento
     Port Map(
 		reset => reset,
 		clk => clk,
@@ -145,47 +145,8 @@ Maquinita : FSM
 		bdir => BdirFSMt,
 		bdatin => BdatFSMin,
 		bdatout => BdatFSMout,
-		rw => rwFSM,
-		muerto => muertos,
-		revivo => revivos);
+		rw => rwFSM);
 		
-sinc: process(reset,clk)
-	begin
-		if (reset = '1') then
-			k <= (others=>'0');
-			doutareini <= (others=>'0');
-		elsif (rising_edge(clk)) then
-			k<=pk;
-			doutareini <= pdoutareini;
-		end if;
-	end process;
 
-reinicio : process(muertos,BdirFSMt,BdatFSMin,rwFSM,k,Bdattabout,doutareini)
-	begin
-		pk<= (others=>'0');
-		if (muertos = '1') then
-			Bdirtab <= (others=>'0');
-			BdatFSMout <= (others=>'0');
-			Bdattabin <= (others=>'0');
-			rwreini <= "0";
-			pdoutareini<= (others=>'0');
-			while k < "11110000" loop
-				rwreini <= "0"; --Leemos de tablero
-				pdoutareini <= Bdattabout (7 downto 4); --Guardamos el tablero incial
-				rwreini <= "1"; --Escribimos en tablero
-				Bdattabin (3 downto 0) <= doutareini; --Reiniciamos contenido
-				Bdirtab <= std_logic_vector(k); --Incrementamos dirección
-				pk<=k+1;
-			end loop;
-			revivos <= '1';
-		else 
-			Bdirtab <= BdirFSMt;
-			rwreini <= rwFSM;
-			BdatFSMout <= Bdattabout (3 downto 0) ;
-			Bdattabin (3 downto 0) <= BdatFSMin;
-			revivos <= '0';
-			pdoutareini<= (others=>'0');
-		end if;
-	end process;
 		
 end Behavioral;
