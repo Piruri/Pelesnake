@@ -21,7 +21,7 @@ entity FSM is
 	 end FSM;
 
 architecture Behavioral of FSM is
-   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK3, OK); --estados
+   type mi_estado is (Inicio, Reposo, Movimiento,CalculoCasilla , Analisis, KO, Avanza,Sumar, OK1, OK2, OK3, OK, Ponpez); --estados
    signal estado,p_estado: mi_estado;
    signal cuenta, p_cuenta: unsigned(4 downto 0); --contador
    signal pDserp,Dserp,pnxDserp,nxDserp,Dcola,pDcola: unsigned(7 downto 0); --registros de direcciones
@@ -32,6 +32,8 @@ signal direcciones : std_logic_vector (3 downto 0); --Para codificar el movimien
 signal bdirs, pbdirs : std_logic_vector (7 downto 0); --Señales para hacer sincronas esa salida
 signal bdatins, pbdatins : std_logic_vector (3 downto 0); -- Señales para hacer sincrona la salida
 signal auxtframe,pflag,flag: std_logic;
+signal pezcnt, p_pezcnt : unsigned (7 downto 0); --Señal para el contador para pintar el pescado
+signal bdatouts: std_logic_vector (3 downto 0); --Señal que se corresponde con bdataout para el pescado
 begin
 	
 direcciones(0)<=UP;
@@ -105,9 +107,19 @@ comb:process (direcciones,mov,tframe, flag) --Codificacin para el movimiento
 -- Conexion de las señales a las salidas.
 bdir <= bdirs;
 bdatin <= bdatins;
+bdatouts <= bdatout;
 -----------------------------------------------------------
+pescadoc: process(pezcnt)
+	begin
+		if (pezcnt<240) then
+			p_pezcnt<=pezcnt+1;
+		else
+			p_pezcnt<=(others=>'0');
+		end if;
+	end process;
+------------------------------------------------------------
 
-   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla,bdirs,bdatins,auxtframe)
+   combi: process(estado,cuenta,mov,bdatout,Dserp,Dcola,direcciones,RS,nxDserp,casilla,bdirs,bdatins,auxtframe,pezcnt,bdatouts)
        begin
 				pDserp <= Dserp;
 			  pnxDserp <= nxDserp;
@@ -287,6 +299,30 @@ bdatin <= bdatins;
 							p_estado<=sumar;
 							p_cuenta<=cuenta +1;
 						end if;	
+-----------------------------------------------------------
+						when Ponpez=>
+							pRS<=RS;
+							rw<="0"; --se va a leer en la memoria
+							pbdirs<=std_logic_vector(pezcnt); --la dirección aleatoria para posible pesacado
+							if(cuenta>1) then
+								if(bdatouts="0000") then
+									if(cuenta>3) then
+										rw<="1"; --escribimos en memoria
+										pbdatins<="0011"; --código del pescado
+										p_estado<=reposo;
+										p_cuenta<=(others=>'0');
+									else
+										p_cuenta<=cuenta+1;
+										p_estado<=Ponpez;
+									end if;
+								else
+									p_estado<=Ponpez;
+									p_cuenta<=cuenta;
+								end if;
+							else
+								p_cuenta<=cuenta+1;
+								p_estado<=Ponpez;
+							end if;
 -----------------------------------------------------------
 						when OK1=> --nueva cabeza de movimiento normal
 						
