@@ -64,7 +64,7 @@ COMPONENT tablero	PORT(
 END COMPONENT;
 
 Component FSM is
-	Generic( CNT: integer :=7); -- numero de veces que cuenta antes de hacer otro movimiento
+	Generic( CNT: integer :=31); -- numero de veces que cuenta antes de hacer otro movimiento
     Port (
 		reset : in std_logic;
 		clk : in std_logic;
@@ -133,11 +133,11 @@ tablerito : tablero
 	  doutb (3 downto 0) => BdataPlot);
 		
 Maquinita : FSM 
-	Generic Map( CNT =>2) -- numero de veces que cuenta antes de hacer otro movimiento
+	Generic Map( CNT =>31) -- numero de veces que cuenta antes de hacer otro movimiento
     Port Map(
 		reset => reset,
 		clk => clk,
-		tframe => Hsincs,
+		tframe => Vsincs,
 		UP => Up,
 		LEF => Lef,
 		RIG => Rig,
