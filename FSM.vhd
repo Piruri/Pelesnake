@@ -172,6 +172,10 @@ pescadoc: process(pezcnt, estado, cuenta)
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif (mov="11" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="00";
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
 									  pRS(1 downto 0)<="00"; --si no se mantiene
@@ -186,6 +190,10 @@ pescadoc: process(pezcnt, estado, cuenta)
 							pRS (4 downto 2) <= RS (4 downto 2);
                          if (mov/="10" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
+								 elsif (mov="10" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="01";
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
@@ -204,6 +212,10 @@ pescadoc: process(pezcnt, estado, cuenta)
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif (mov="01" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="10";
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
 									  pRS(1 downto 0)<="10"; --si no se mantiene
@@ -218,6 +230,10 @@ pescadoc: process(pezcnt, estado, cuenta)
 							pRS (4 downto 2) <= RS (4 downto 2);
                         if (mov/="00" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
+								 elsif (mov="00" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="11";
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
@@ -296,7 +312,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 						if (cuenta>3) then 
 							pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
 							pbdatins(3 downto 2)<="10";
-							pbdatins(1 downto 0)<=mov;
+							pbdatins(1 downto 0)<=RS(1 downto 0);
 							p_estado<=Ponpez;
 							pDserp <= nxDserp; --Actualizar valor de la Dserp.
 							pDcola <= Dserp; -- ILLO CABESA, K ASE K NO ACTULISA LA KOLITA
@@ -309,7 +325,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 							
 							pbdirs<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
 							pbdatins(3 downto 2)<="01";
-							pbdatins(1 downto 0)<=mov;
+							pbdatins(1 downto 0)<=RS(1 downto 0);
 							p_estado<=sumar;
 							pDcola <= Dcola;-- ILLO CABESA, K AKI NO CANVIA
 							p_cuenta<=cuenta +1;
@@ -346,7 +362,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 						if (cuenta=2) then
 						pbdirs<=std_logic_vector(nxDserp); --se elige la nueva direccin
 						pbdatins(3 downto 2)<="01"; --se escribe la nueva cabeza
-						pbdatins(1 downto 0)<=mov;
+						pbdatins(1 downto 0)<=RS(1 downto 0);
 						p_estado<=OK2;
 						p_cuenta<=(others=>'0');
 						else
@@ -362,7 +378,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 						if (cuenta=2) then
 						pbdirs<=std_logic_vector(Dserp); --se elige la antigua direccin
 						pbdatins(3 downto 2)<="10"; --se escribe un nuevo cuerpo
-						pbdatins(1 downto 0)<=mov;
+						pbdatins(1 downto 0)<=RS(1 downto 0);
 						p_estado<=OK3; --OK3
 						p_cuenta<=(others=>'0');
 						else
