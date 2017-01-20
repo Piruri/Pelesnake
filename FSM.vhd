@@ -315,19 +315,14 @@ pescadoc: process(pezcnt, estado, cuenta)
 							pbdatins(1 downto 0)<=RS(1 downto 0);
 							p_estado<=Ponpez;
 							pDserp <= nxDserp; --Actualizar valor de la Dserp.
-							pDcola <= Dserp; -- ILLO CABESA, K ASE K NO ACTULISA LA KOLITA
---							if (cuenta =6) then
-								p_cuenta <= (others=>'0');
---							else
---								p_cuenta<=cuenta+1;
---							end if;
+							pDcola <= Dserp; 
+							p_cuenta <= (others=>'0');
 						else	
-							
 							pbdirs<=std_logic_vector(nxDserp); --se escribe la nueva cabeza
 							pbdatins(3 downto 2)<="01";
 							pbdatins(1 downto 0)<=RS(1 downto 0);
 							p_estado<=sumar;
-							pDcola <= Dcola;-- ILLO CABESA, K AKI NO CANVIA
+							pDcola <= Dcola;
 							p_cuenta<=cuenta +1;
 						end if;	
 -----------------------------------------------------------
@@ -358,15 +353,15 @@ pescadoc: process(pezcnt, estado, cuenta)
 						when OK1=> --nueva cabeza de movimiento normal
 						
 						pRS <= RS;
-						rw<="1"; --se va a escribir en la memoria
-						if (cuenta=2) then
 						pbdirs<=std_logic_vector(nxDserp); --se elige la nueva direccin
 						pbdatins(3 downto 2)<="01"; --se escribe la nueva cabeza
 						pbdatins(1 downto 0)<=RS(1 downto 0);
+						if (cuenta=2) then
+						rw<="1"; --se va a escribir en la memoria
 						p_estado<=OK2;
 						p_cuenta<=(others=>'0');
 						else
-						pbdirs<=std_logic_vector(nxDserp); --se elige la nueva direccin
+						rw<="0";
 						p_cuenta<=cuenta + 1;
 						p_estado<=OK1;
 						end if;
@@ -374,15 +369,15 @@ pescadoc: process(pezcnt, estado, cuenta)
 						when OK2=> --cuerpo en la antigua cabeza
 						
 						pRS <= RS;
-						rw<="1"; --se va a escribir en la memoria
-						if (cuenta=2) then
 						pbdirs<=std_logic_vector(Dserp); --se elige la antigua direccin
 						pbdatins(3 downto 2)<="10"; --se escribe un nuevo cuerpo
 						pbdatins(1 downto 0)<=RS(1 downto 0);
+						if (cuenta=2) then
+						rw<="1"; --se va a escribir en la memoria
 						p_estado<=OK3; --OK3
 						p_cuenta<=(others=>'0');
 						else
-						pbdirs<=std_logic_vector(Dserp); --se elige la antigua direccin
+						rw<="0"; --se va a leer en memoria
 						p_cuenta<=cuenta + 1;
 						p_estado<=OK2;
 						end if;
@@ -407,9 +402,9 @@ pescadoc: process(pezcnt, estado, cuenta)
 						pRS <= RS;
 						pDserp<=nxDserp;
 						pbdirs<=std_logic_vector(Dcola); --se busca la cola
-						rw<="1"; --se va a escribir
 						pbdatins<="0000"; --se vacia la direccion de la cola
 						if (cuenta>4) then
+							rw<="1"; --se va a escribir
 							p_cuenta<=(others=>'0');
 							p_estado<=reposo;
 							case casilla(1 downto 0) is --se actualiza la direccion de la cola
@@ -425,6 +420,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 									pDcola <= Dcola;
 								end case;
 						else
+							rw<="0";
 							p_cuenta<=cuenta+1;
 							p_estado<=OK;
 						end if;
