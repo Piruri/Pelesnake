@@ -172,6 +172,10 @@ pescadoc: process(pezcnt, estado, cuenta)
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif (mov="11" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="00";
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
 									  pRS(1 downto 0)<="00"; --si no se mantiene
@@ -186,6 +190,10 @@ pescadoc: process(pezcnt, estado, cuenta)
 							pRS (4 downto 2) <= RS (4 downto 2);
                          if (mov/="10" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
+								 elsif (mov="10" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="01";
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
@@ -204,6 +212,10 @@ pescadoc: process(pezcnt, estado, cuenta)
                             pRS(1 downto 0)<=mov;
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
+								 elsif (mov="01" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="10";
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
 								     p_cuenta<=cuenta+1;
 									  pRS(1 downto 0)<="10"; --si no se mantiene
@@ -218,6 +230,10 @@ pescadoc: process(pezcnt, estado, cuenta)
 							pRS (4 downto 2) <= RS (4 downto 2);
                         if (mov/="00" and cuenta=CNT) then --si no se esta realizando el mov contrario se guarda
                             pRS(1 downto 0)<=mov;
+									 p_estado <= CalculoCasilla;
+                            p_cuenta<=(others=>'0');
+								 elsif (mov="00" and cuenta=CNT) then --si se esta realizando el mov contrario se guarda
+                            pRS(1 downto 0)<="11";
 									 p_estado <= CalculoCasilla;
                             p_cuenta<=(others=>'0');
 								 elsif(auxtframe = '1') then --solo aumenta la cuenta al alcanzarse un vsinc
