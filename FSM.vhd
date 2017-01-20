@@ -113,7 +113,7 @@ bdatouts <= bdatout;
 pescadoc: process(pezcnt, estado, cuenta)
 	begin
 		if (pezcnt<240) then
-			if (estado/=Ponpez or cuenta=3) then
+			if (estado/=Ponpez or cuenta=2) then
 			p_pezcnt<=pezcnt+1;
 			else 
 			p_pezcnt<=pezcnt;
@@ -285,7 +285,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 						pRS<=RS;
 						pbdirs<=std_logic_vector(nxDserp); --se escribe la casilla
 						pcasilla<=bdatout;
-						if (cuenta=6) then
+						if (cuenta=2) then
 								p_cuenta<=(others=>'0');
 								if(casilla(3)='1')then --si el bMs es uno es muro o cola
 								  p_estado<=ko;
@@ -309,7 +309,7 @@ pescadoc: process(pezcnt, estado, cuenta)
                when sumar=>
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
-						if (cuenta>3) then 
+						if (cuenta>2) then 
 							pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
 							pbdatins(3 downto 2)<="10";
 							pbdatins(1 downto 0)<=RS(1 downto 0);
