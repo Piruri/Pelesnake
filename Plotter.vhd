@@ -19,25 +19,42 @@ entity Plotter is
 end Plotter;
 
 architecture Behavioral of Plotter is
-COMPONENT Imagenes
+COMPONENT BR1
   PORT (
     clka : IN STD_LOGIC;
-    addra : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
+    douta : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+  );
+END COMPONENT;
+COMPONENT BR2
+  PORT (
+    clka : IN STD_LOGIC;
+    addra : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
+    douta : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+  );
+END COMPONENT;
+COMPONENT BR3
+  PORT (
+    clka : IN STD_LOGIC;
+    addra : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
     douta : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
   );
 END COMPONENT;
 
-
 signal yt, xt:unsigned (3 downto 0); --seales de y x para el tablero
 signal yr, xr:unsigned (4 downto 0); --seales de y x para las imagenes
-signal addraIm: std_logic_vector(12 downto 0); --direcciones de lectura a las memorias
-signal doutaIm: std_logic_vector(7 downto 0); --info dentro de memorias
+signal addraBR1, addraBR2: std_logic_vector(10 downto 0); --direcciones de lectura a las memorias
+signal addraBR3: std_logic_vector(9 downto 0); --direcciones de lectura a la memoria del pez
+signal doutaBR1, doutaBR2, doutaBR3: std_logic_vector(7 downto 0); --info dentro de memorias
 
 begin
 
-RomIma: Imagenes
-	Port Map (clka=>clk,addra=>addraIm,douta=>doutaIm);
-
+RomBR1:BR1
+	Port Map(clka=>clk,addra=>addraBR1,douta=>doutaBR1);
+RomBR2:BR2
+	Port Map(clka=>clk,addra=>addraBR2,douta=>doutaBR2);
+RomBR3:BR3
+	Port Map(clka=>clk,addra=>addraBR3,douta=>doutaBR3);
 yxt(7 downto 4)<=std_logic_vector(yt); --asignacin de las coordenadas
 yxt(3 downto 0)<=std_logic_vector(xt); --yx que iran al tablero
 
@@ -47,104 +64,129 @@ yt<= unsigned(Y(8 downto 5)); --que dividen el tablero en grupos de 32 bits
 xr<= unsigned(X(4 downto 0)); --coordenadas yr y xr sern los bits
 yr<= unsigned(Y(4 downto 0)); --que cuentan de 32 en 32
 
-comb: process(objeto,yr,xr,Y,X,doutaIm)
+comb: process(objeto,yr,xr,Y,X,doutaBR1,doutaBR2,doutaBR3)
 	begin
 		if(unsigned(X)<63 or unsigned(X)>575)then 
 			RGB<="00101011";
-			addraIm<=(others=>'0');
+			addraBR2<=(others=>'0');
+			addraBR1<=(others=>'0');
+			addraBR3<=(others=>'0');
 		else
 		
 			case objeto is
 				when "0000" => --vacio (tablero libre)
-					addraIm<=(others=>'0');
+					addraBR1<=(others=>'0');
+					addraBR2<=(others=>'0');
+					addraBR3<=(others=>'0');
 					RGB<="11111010";
 				when "0100"=> --cabeza arriba
-					addraIm(12 downto 10)<="001";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);
-					if (doutaIm = "11111111") then
+					addraBR1(10)<='1';
+					addraBR1(9 downto 5)<=std_logic_vector(yr);
+					addraBR1(4 downto 0)<=std_logic_vector(xr);
+					addraBR2<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR1 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR1;
 					end if;
 				when "0101"=> --cabeza derecha (inversin)
-					addraIm(12 downto 10)<="000";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
-					if (doutaIm = "11111111") then
+					addraBR1(10)<='0';
+					addraBR1(9 downto 5)<=std_logic_vector(yr);
+					addraBR1(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz
+					addraBR2<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR1 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR1;
 					end if;
 				when "0110"=> --cabeza izquierda
-					addraIm(12 downto 10)<="000";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);		
-					if (doutaIm = "11111111") then
+					addraBR1(10)<='0';
+					addraBR1(9 downto 5)<=std_logic_vector(yr);
+					addraBR1(4 downto 0)<=std_logic_vector(xr);
+					addraBR2<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR1 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR1;
 					end if;
-				when "0111"=> --cabeza abajo
-					addraIm(12 downto 10)<="010";
-					addraIm(9 downto 5)<=std_logic_vector(31-yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);		
-					if (doutaIm = "11111111") then
+				when "0111"=> --cabeza abajo (inversion)
+					addraBR1(10)<='1';
+					addraBR1(9 downto 5)<=std_logic_vector(31-yr);
+					addraBR1(4 downto 0)<=std_logic_vector(xr);
+					addraBR2<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR1 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR1;
 					end if;
 				when "0011" => --pescado
-					addraIm(12 downto 10)<="110";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);
-					if (doutaIm = "11111111") then
+					addraBR3(9 downto 5)<=std_logic_vector(yr);
+					addraBR3(4 downto 0)<=std_logic_vector(xr);
+					addraBR2<=(others=>'0');
+					addraBR1<=(others=>'0');
+					if (doutaBR3 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR3;
 					end if;
 				when "1000" => --gato arriba
-					addraIm(12 downto 10)<="100";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);
-					if (doutaIm = "11111111") then
+					addraBR2(10)<='1';
+					addraBR2(9 downto 5)<=std_logic_vector(yr);
+					addraBR2(4 downto 0)<=std_logic_vector(xr);
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR2 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR2;
 					end if;
 				when "1001"=> --gato derecha (inversin)
-					addraIm(12 downto 10)<="011";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
-					if (doutaIm = "11111111") then
+					addraBR2(10)<='0';
+					addraBR2(9 downto 5)<=std_logic_vector(yr);
+					addraBR2(4 downto 0)<=std_logic_vector(31-xr); --le restamos 31 a la coordenada x para invertir la matriz		
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR2 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR2;
 					end if;
 				when "1010"=> --gato izquierda
-					addraIm(12 downto 10)<="011";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);		
-					if (doutaIm = "11111111") then
+					addraBR2(10)<='0';
+					addraBR2(9 downto 5)<=std_logic_vector(yr);
+					addraBR2(4 downto 0)<=std_logic_vector(xr);
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR2 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR2;
 					end if;
-				when "1011"=> --gato abajo
-					addraIm(12 downto 10)<="101";
-					addraIm(9 downto 5)<=std_logic_vector(yr);
-					addraIm(4 downto 0)<=std_logic_vector(xr);		
-					if (doutaIm = "11111111") then
+				when "1011"=> --gato abajo (inversion)
+					addraBR2(10)<='1';
+					addraBR2(9 downto 5)<=std_logic_vector(31-yr);
+					addraBR2(4 downto 0)<=std_logic_vector(xr);
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
+					if (doutaBR2 = "11111111") then
 						RGB<="11111010";
 					else
-						RGB<=doutaIm;
+						RGB<=doutaBR2;
 					end if;
 				when "1111"=> --muro
-					addraIm<=(others=>'0');
+					addraBR2<=(others=>'0');
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
 					RGB<="00011011";
 				when others =>
-					addraIm<=(others=>'0');
-					RGB<="11111010";--"00011100" es para detectar errores
+					addraBR2<=(others=>'0');
+					addraBR1<=(others=>'0');
+					addraBR3<=(others=>'0');
+					RGB<="00011100";--"00011100" es para detectar errores
 			end case;
 		end if;
 end process;
