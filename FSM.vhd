@@ -113,7 +113,7 @@ bdatouts <= bdatout;
 pescadoc: process(pezcnt, estado, cuenta)
 	begin
 		if (pezcnt<240) then
-			if (estado/=Ponpez or cuenta=2) then
+			if (estado/=Ponpez or cuenta=3) then
 			p_pezcnt<=pezcnt+1;
 			else 
 			p_pezcnt<=pezcnt;
@@ -285,7 +285,7 @@ pescadoc: process(pezcnt, estado, cuenta)
 						pRS<=RS;
 						pbdirs<=std_logic_vector(nxDserp); --se escribe la casilla
 						pcasilla<=bdatout;
-						if (cuenta=2) then
+						if (cuenta=6) then
 								p_cuenta<=(others=>'0');
 								if(casilla(3)='1')then --si el bMs es uno es muro o cola
 								  p_estado<=ko;
@@ -309,7 +309,7 @@ pescadoc: process(pezcnt, estado, cuenta)
                when sumar=>
 						pRS <= RS;
 						rw<="1"; --se va a escribir en la memoria
-						if (cuenta>2) then 
+						if (cuenta>3) then 
 							pbdirs<=std_logic_vector(Dserp); --se escribe en la antigua cabeza un cuerpo
 							pbdatins(3 downto 2)<="10";
 							pbdatins(1 downto 0)<=RS(1 downto 0);
@@ -373,11 +373,11 @@ pescadoc: process(pezcnt, estado, cuenta)
 						pbdatins(3 downto 2)<="10"; --se escribe un nuevo cuerpo
 						pbdatins(1 downto 0)<=RS(1 downto 0);
 						if (cuenta=2) then
-						rw<="1"; --se va a escribir en la memoria
+						rw<="0"; --se va a escribir en la memoria
 						p_estado<=OK3; --OK3
 						p_cuenta<=(others=>'0');
 						else
-						rw<="0"; --se va a leer en memoria
+						rw<="1"; --se va a leer en memoria
 						p_cuenta<=cuenta + 1;
 						p_estado<=OK2;
 						end if;
@@ -386,13 +386,12 @@ pescadoc: process(pezcnt, estado, cuenta)
 						
 						pRS <= RS;
 						rw<="0"; --se va a leer de la memoria
-						if (cuenta=2) then
 						pbdirs<=std_logic_vector(Dcola); --se elige la direccin de la cola
+						if (cuenta=4) then
 						pcasilla<=bdatout;
 						p_estado<=OK;
 						p_cuenta<=(others=>'0');
 						else
-						pbdirs<=std_logic_vector(Dcola); --se elige la direccin de la cola
 						p_cuenta<=cuenta + 1;
 						p_estado<=OK3;
 						end if;
